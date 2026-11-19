@@ -1,21 +1,22 @@
 #!/usr/bin/env sh
 #
-# A TRAVA DO PROJETO.
+# THE PROJECT BRANCH GUARD.
 #
-# Roda nos hooks do git (pre-commit, pre-merge-commit, pre-push), então vale para todo mundo:
-# terminal, Claude e Tower. Ela recusa:
+# Runs in the git hooks (pre-commit, pre-merge-commit, pre-push), so it applies to everyone:
+# terminal, Claude and Tower. It refuses:
 #
-#   main        → commit, merge e envio. A main é de quem administra.
-#   develop     → commit direto. Ela só recebe feature pronta, por merge.
+#   main        → commit, merge and push. main belongs to the admin.
+#   develop     → direct commits. It only receives finished features, by merge.
 #
-# Quem administra libera a própria máquina UMA vez, e só ela:
+# The admin unlocks their own machine ONCE, and only it:
 #
 #   git config project.admin true
 #
-# A configuração fica no `.git/config` daquele clone e não é versionada — por isso não vaza
-# para a máquina de mais ninguém.
+# The setting lives in that clone's `.git/config` and is not versioned, so it never leaks to
+# anyone else's machine.
 #
-# As mensagens são para quem NÃO programa: dizem o que aconteceu e o que fazer, sem jargão.
+# The printed messages are for people who do NOT code: what happened and what to do, no jargon.
+# They stay in Portuguese because people read them. Ported from acerola-sync.
 
 action="$1"
 
@@ -45,7 +46,7 @@ case "$action" in
         'Peça ao Claude: "começa uma feature de <o que você está fazendo>". Ele cria a branch certa e leva as alterações junto.'
     fi
 
-    # Concluir um merge em andamento é permitido: é o merge da feature chegando.
+    # Finishing a merge in progress is allowed: it is the feature merge arriving.
     if [ "$branch" = "develop" ] && [ ! -f "$git_dir/MERGE_HEAD" ]; then
       refuse \
         'Na branch "develop" só entram funcionalidades prontas, por merge.' \
@@ -62,7 +63,7 @@ case "$action" in
     ;;
 
   push)
-    # O git entrega uma linha por referência enviada: <local> <sha> <remota> <sha>.
+    # git sends one line per pushed ref: <local> <sha> <remote> <sha>.
     while read -r _local_ref _local_sha remote_ref _remote_sha; do
       if [ "$remote_ref" = "refs/heads/main" ]; then
         refuse \

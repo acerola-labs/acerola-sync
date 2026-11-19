@@ -34,6 +34,14 @@ test('só raio por token', () => {
 	assert.deepEqual(rules(`<div class="rounded-card rounded-full rounded-inner">`), []);
 });
 
+test('só sombra e fonte por token', () => {
+	assert.deepEqual(rules(`<div class="shadow-lg">`), ['shadow']);
+	assert.deepEqual(rules(`<div class="shadow-lift shadow-float">`), []);
+	assert.deepEqual(rules(`font-family: 'Inter', sans-serif;`), ['font']);
+	assert.deepEqual(rules(`font-family: var(--font-sans);`), []);
+	assert.deepEqual(rules(`<p class="font-[Inter]">`), ['font']);
+});
+
 test('linha com design-allow passa', () => {
 	assert.deepEqual(rules(`<div class="text-white"> <!-- design-allow: logo da marca -->`), []);
 });
@@ -41,6 +49,6 @@ test('linha com design-allow passa', () => {
 test('isenta tema, shadcn e testes', () => {
 	assert.equal(isExempt('/x/extension/svelte/src/theme/colors/catppuccin.css'), true);
 	assert.equal(isExempt('/x/extension/svelte/src/lib/components/ui/button/button.svelte'), true);
-	assert.equal(isExempt('/x/extension/svelte/src/lib/screens/HomeScreen.test.ts'), true);
-	assert.equal(isExempt('/x/extension/svelte/src/lib/screens/HomeScreen.svelte'), false);
+	assert.equal(isExempt('/x/extension/svelte/src/lib/screens/home-screen.test.ts'), true);
+	assert.equal(isExempt('/x/extension/svelte/src/lib/screens/home-screen.svelte'), false);
 });

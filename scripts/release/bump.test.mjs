@@ -5,15 +5,23 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { bump, bumpCargoLock, bumpCargoToml, bumpPackageJson, parseTag } from './bump.mjs';
 
-test('lê app, canal e versão da tag', () => {
-	assert.deepEqual(parseTag('extension/prod/v1.2.3'), {
+test('lê app, versão e pré-versão da tag', () => {
+	assert.deepEqual(parseTag('extension/v1.2.3'), {
 		app: 'extension',
-		channel: 'prod',
-		version: '1.2.3'
+		version: '1.2.3',
+		prerelease: false
 	});
-	assert.equal(parseTag('server/beta/v0.2.0-rc.1').version, '0.2.0-rc.1');
-	assert.throws(() => parseTag('desktop/prod/v1.0.0'));
-	assert.throws(() => parseTag('server/prod/vabc'));
+	assert.deepEqual(parseTag('server/v0.2.0-rc.1'), {
+		app: 'server',
+		version: '0.2.0-rc.1',
+		prerelease: true
+	});
+	assert.throws(() => parseTag('desktop/v1.0.0'));
+	assert.throws(() => parseTag('server/prod/v1.0.0'));
+	assert.throws(() => parseTag('server/vabc'));
+	assert.throws(() => parseTag('server/v1.4'));
+	assert.throws(() => parseTag('server/v01.4.2'));
+	assert.throws(() => parseTag('server/v1.5.0-beta'));
 });
 
 test('package.json mantém a indentação', () => {
