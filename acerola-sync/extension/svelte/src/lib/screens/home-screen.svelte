@@ -31,7 +31,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 
-	// Abas por status, como o MALSync: dá para ver o que está acompanhando e o que já terminou.
+	// Tabs by status, like MALSync: you can see what you are following and what you finished.
 	const STATUS_ORDER: EntryStatus[] = [
 		'CURRENT',
 		'COMPLETED',
@@ -55,7 +55,7 @@
 	let sentinel = $state<HTMLElement>();
 	let observer: IntersectionObserver | undefined;
 
-	// Rolagem infinita: 48 de cada vez, a próxima página quando o fim da grade aparece.
+	// Infinite scroll: 48 at a time, the next page when the end of the grid shows up.
 	const PAGE_SIZE = 48;
 
 	const page = $derived(app.mode === 'page');
@@ -70,7 +70,7 @@
 			})
 		)
 	);
-	// Com filtro ou outra ordem, o primeiro da lista não é "o que estava vendo": sem destaque.
+	// With a filter or another sort, the first item is not "what you were watching": no highlight.
 	const filtering = $derived(
 		activeFilterCount(filters) > 0 || filters.q.trim() !== '' || filters.sort !== 'updated'
 	);
@@ -106,9 +106,9 @@
 		loading = true;
 		const requested = { mediaType, status, filters };
 		try {
-			// Vem do espelho no server (filtrado e ordenado lá): não gasta request no AniList.
+			// Comes from the server mirror (filtered and sorted there): no AniList request spent.
 			const page = await app.api.entries({ ...requested, limit: PAGE_SIZE, offset: 0 });
-			// Mudou aba ou filtro enquanto carregava: a resposta nova é que vale.
+			// Tab or filter changed while loading: the newest response wins.
 			if (!sameRequest(requested)) return;
 			entries = page;
 			firstPageSize = page.length;
@@ -130,7 +130,7 @@
 				limit: PAGE_SIZE,
 				offset: entries.length
 			});
-			// Trocou de aba enquanto carregava: descarta.
+			// Tab changed while loading: discard.
 			if (!sameRequest(requested)) return;
 			const known = new Set(entries.map((entry) => entry.mediaId));
 			entries = [...entries, ...page.filter((entry) => !known.has(entry.mediaId))];
@@ -181,7 +181,7 @@
 	function selectType(next: MediaType) {
 		if (next === mediaType) return;
 		mediaType = next;
-		// Gênero, formato e ano mudam de anime para mangá; busca e ordem continuam.
+		// Genre, format and year change between anime and manga; search and sort stay.
 		filters = { ...EMPTY_FILTERS, q: filters.q, sort: filters.sort };
 		facets = null;
 		void loadFacets();
@@ -253,8 +253,8 @@
 	<header class="flex flex-col gap-1">
 		<p class="text-xs font-semibold text-muted-foreground">{greeting}</p>
 		<!--
-			As duas palavras grandes são as abas de tipo: a ativa fica cheia, com uma barra embaixo
-			que desliza na troca; a outra fica apagada e acende no hover — dá para ver que é clicável.
+			The two big words are the type tabs: the active one is solid, with a bar underneath
+			that slides on switch; the other is dimmed and lights up on hover, so it reads as clickable.
 		-->
 		<div
 			class="isolate flex items-baseline gap-4 self-start pb-2.5"
@@ -418,7 +418,7 @@
 		use:staggerIn={{ key: `${mediaType}-${status}-${JSON.stringify(filters)}-${loading}` }}
 	>
 		{#each grid as entry, index (entry.mediaId)}
-			<!-- A primeira página entra em cascata; as seguintes, card a card ao chegar. -->
+			<!-- The first page cascades in; the next ones card by card as they arrive. -->
 			<div use:revealIn={{ y: 16, skip: index < firstPageSize }}>
 				<AcerolaMediaCard
 					data={{ media: entry.media, entry, subtitle: subtitle(entry), badge: badge(entry) }}

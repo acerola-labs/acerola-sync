@@ -4,7 +4,7 @@
 	export type AcerolaListFiltersProps = {
 		data: {
 			value: EntryFilters;
-			/** O que existe na lista (gêneros, formatos, anos). `null` enquanto carrega. */
+			/** What exists in the list (genres, formats, years). `null` while loading. */
 			facets: EntryFacets | null;
 		};
 		events?: {
@@ -12,7 +12,7 @@
 		};
 		ui?: {
 			class?: string;
-			/** Espera de digitação antes de mandar a busca (ms). */
+			/** Typing delay before sending the search (ms). */
 			debounceMs?: number;
 		};
 	};
@@ -26,7 +26,7 @@
 		mediaStatuses: []
 	};
 
-	/** Quantos filtros do painel estão ligados (a busca e a ordem não contam). */
+	/** How many panel filters are on (search and sort do not count). */
 	export function activeFilterCount(filters: EntryFilters): number {
 		return (
 			filters.formats.length +
@@ -52,7 +52,7 @@
 	let open = $state(false);
 	let typed = $state('');
 	let lastQ: string | undefined;
-	// Acompanha a busca de fora (ex.: "limpar" ou troca de tipo) sem atropelar a digitação.
+	// Follows the search from outside (e.g. "clear" or a type change) without trampling typing.
 	$effect.pre(() => {
 		const q = data.value.q;
 		if (q !== lastQ) {

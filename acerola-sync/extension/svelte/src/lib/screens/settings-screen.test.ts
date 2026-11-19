@@ -106,7 +106,7 @@ describe('SettingsScreen — sites personalizados', () => {
 			})
 		);
 		expect(api.createCustomSite).not.toHaveBeenCalled();
-		// Ligado: confirma a permissão (já dada = o navegador responde sem perguntar).
+		// On: confirms the permission (already granted = the browser answers without asking).
 		expect(request).toHaveBeenCalledWith({ origins: ['https://animefire.one/*'] });
 	});
 

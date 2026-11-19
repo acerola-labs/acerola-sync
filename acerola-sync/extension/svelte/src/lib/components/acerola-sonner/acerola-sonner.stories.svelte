@@ -5,8 +5,8 @@
 	import { toastAsync } from '$lib/utils/toast-async.utils';
 
 	function fakeInstantAction(): Promise<void> {
-		// Resolve na hora de propósito — é o caso que `toastAsync` protege (`minDurationMs`),
-		// pra sempre dar tempo da animação de loading -> check ser percebida.
+		// Resolves immediately on purpose: it is the case `toastAsync` guards (`minDurationMs`),
+		// so the loading -> check animation always has time to be noticed.
 		return Promise.resolve();
 	}
 

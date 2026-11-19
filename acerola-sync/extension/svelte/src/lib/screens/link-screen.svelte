@@ -13,7 +13,7 @@
 
 	let linked = $state<SearchHit | null>(null);
 
-	// Vincula a página do site à obra escolhida. Vale para todos os episódios/capítulos dela.
+	// Links the site page to the chosen media. Applies to all of its episodes/chapters.
 	async function pick(hit: SearchHit) {
 		if (!app.api) return;
 		try {

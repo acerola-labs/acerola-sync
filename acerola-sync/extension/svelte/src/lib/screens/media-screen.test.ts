@@ -62,7 +62,7 @@ describe('MediaScreen', () => {
 
 		expect(api.deleteEntry).toHaveBeenCalledOnce();
 		await vi.waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
-		// Saiu da lista: o botão vira "adicionar".
+		// Left the list: the button becomes "add".
 		expect(
 			await screen.findByRole('button', { name: /Add to list|Adicionar à lista/ })
 		).toBeInTheDocument();
@@ -163,7 +163,7 @@ describe('MediaScreen', () => {
 
 		const watch = document.querySelector('[data-watch-links]')!;
 		const hrefs = [...watch.querySelectorAll('a')].map((a) => a.getAttribute('href'));
-		// A visita do Crunchyroll vale mais que o link oficial dele; Netflix entra como busca.
+		// A Crunchyroll visit beats its official link; Netflix comes in as a search.
 		expect(hrefs[0]).toBe('https://www.crunchyroll.com/watch/ep7');
 		expect(hrefs).not.toContain('https://www.crunchyroll.com/x');
 		expect(hrefs.some((href) => href?.startsWith('https://www.netflix.com/search'))).toBe(true);

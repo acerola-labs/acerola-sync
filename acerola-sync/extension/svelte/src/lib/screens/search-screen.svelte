@@ -18,10 +18,10 @@
 		onPick,
 		hideHeader = false
 	}: {
-		/** Na tela de vincular, o tipo vem do site e não muda. */
+		/** On the link screen, the type comes from the site and does not change. */
 		mediaType?: MediaType;
 		initialQuery?: string;
-		/** Sem `onPick`, clicar abre a obra. */
+		/** Without `onPick`, clicking opens the media. */
 		onPick?: (hit: SearchHit) => void;
 		hideHeader?: boolean;
 	} = $props();
@@ -53,7 +53,7 @@
 		}
 	}
 
-	// Enquanto digita, só o espelho; o AniList só no botão (1 request).
+	// While typing, only the mirror; AniList only on the button (1 request).
 	function schedule() {
 		clearTimeout(timer);
 		timer = setTimeout(() => void run(false), 300);

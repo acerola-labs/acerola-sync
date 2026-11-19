@@ -48,9 +48,9 @@ describe('extractErrorMessage', () => {
 	});
 
 	it('falls back to String(error) when message is present but not a string', () => {
-		// Distingue os dois guards de tipo (`typeof payload.message === 'string'` na 1ª
-		// checagem e na de fallback) de uma versão que aceitasse qualquer valor: com
-		// `message` sendo um número, nenhuma das duas deveria "vazar" o valor cru.
+		// Tells the two type guards (`typeof payload.message === 'string'` in the 1st check
+		// and in the fallback) apart from a version that accepted any value: with `message`
+		// being a number, neither should "leak" the raw value.
 		const payload = { errorType: 'IoError', message: 42 };
 
 		expect(extractErrorMessage(payload)).toBe(String(payload));

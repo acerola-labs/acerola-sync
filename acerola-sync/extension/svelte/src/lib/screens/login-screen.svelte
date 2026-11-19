@@ -16,8 +16,8 @@
 	const redirectUrl = getRedirectUrl();
 	let saveTimer: ReturnType<typeof setTimeout> | undefined;
 
-	// O endereço é salvo enquanto você digita (com uma pausa de 400 ms): clicar fora fecha o
-	// popup, e ele não pode voltar vazio.
+	// The address is saved while you type (after a 400 ms pause): clicking outside closes the
+	// popup, and it must not come back empty.
 	function rememberServer() {
 		clearTimeout(saveTimer);
 		saveTimer = setTimeout(() => {
@@ -51,7 +51,7 @@
 
 		busy = true;
 		try {
-			// O Client ID mora no `.env` do server; a extensão não guarda configuração do AniList.
+			// The Client ID lives in the server `.env`; the extension keeps no AniList configuration.
 			const api = createApi(url);
 			const { anilistClientId } = await api.authConfig();
 			const token = await requestAnilistToken(anilistClientId);

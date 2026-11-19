@@ -6,7 +6,7 @@
 		data: {
 			title: string;
 			description?: string;
-			/** Linha pequena acima do título. */
+			/** Small line above the title. */
 			eyebrow?: string;
 			closeLabel?: string;
 		};
@@ -35,8 +35,8 @@
 </script>
 
 <!--
-	Diálogo de formulário no padrão do app: folha sem borda, título grande, fechar redondo.
-	Rola por dentro quando o conteúdo passa da altura do popup.
+	Form dialog in the app pattern: borderless sheet, large title, round close button.
+	Scrolls inside when the content is taller than the popup.
 -->
 <Dialog.Root bind:open={state.open} onOpenChange={events?.onOpenChange}>
 	<Dialog.Portal>

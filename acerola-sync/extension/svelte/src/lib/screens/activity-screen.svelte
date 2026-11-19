@@ -24,10 +24,10 @@
 	let status = $state<SyncStatus | null>(null);
 	let history = $state<HistoryItem[]>([]);
 	let scheduleEnabled = $state(false);
-	/** Horários em Brasília, como o usuário digita. O server recebe em UTC. */
+	/** Times in Brasília, as the user types them. The server receives UTC. */
 	let scheduleTimes = $state<string[]>([]);
 	let newTime = $state('09:00');
-	/** Escolheu um horário no seletor e ainda não apertou "+": o Salvar leva ele junto. */
+	/** Picked a time in the picker and has not pressed "+" yet: Save takes it along. */
 	let newTimeTouched = $state(false);
 	let fullEvery = $state(24);
 
@@ -68,7 +68,7 @@
 			scheduleTimes = status.settings.scheduleTimes
 				.map((time) => utcToSaoPaulo(time))
 				.filter((time): time is string => !!time);
-			// Abre os logs do último sync (e acompanha, se ainda estiver rodando).
+			// Opens the logs of the last sync (and follows them, if it is still running).
 			if (!watcher.run && status.runs[0]) watcher.watch(status.runs[0]);
 		} catch (error) {
 			await app.handleError(error);
@@ -103,7 +103,7 @@
 	async function saveSchedule() {
 		if (!app.api) return;
 		if (newTimeTouched) addTime();
-		// Agenda ligada sem horário nunca roda: era assim que ela ficava "ligada" sem sync.
+		// A schedule turned on with no time never runs: that is how it stayed "on" with no sync.
 		if (scheduleEnabled && scheduleTimes.length === 0) {
 			toast.error(m['sync.activity.schedule.needsTime']());
 			return;
@@ -156,7 +156,7 @@
 	/>
 
 	{#if tab === 'sync'}
-		<!-- Cartão de estado: grande, colorido pelo resultado, com o botão de sync. -->
+		<!-- Status card: large, colored by the result, with the sync button. -->
 		<section
 			use:revealIn
 			class="flex flex-col gap-4 rounded-card p-5 {running

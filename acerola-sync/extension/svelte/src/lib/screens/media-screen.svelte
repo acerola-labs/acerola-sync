@@ -64,7 +64,7 @@
 		media ? ENTRY_STATUSES.map((id) => ({ id, label: statusLabel(id, media!.mediaType) })) : []
 	);
 	const description = $derived(media?.description?.replace(/<[^>]+>/g, '').trim() ?? '');
-	// Mangá com formato "MANGA" daria "Mangá" duas vezes (e chave repetida derruba o `each`).
+	// A manga with format "MANGA" would show "Mangá" twice (and a repeated key breaks the `each`).
 	const chips = $derived(
 		media
 			? [
@@ -87,7 +87,7 @@
 			? m['sync.tracking.episode']({ number })
 			: m['sync.tracking.chapter']({ number });
 
-	// Datas do AniList são dia de calendário: formata sem fuso para não virar o dia anterior.
+	// AniList dates are calendar days: format without a time zone so it does not become the day before.
 	const dateFormat = new Intl.DateTimeFormat(undefined, {
 		day: 'numeric',
 		month: 'short',
@@ -134,7 +134,7 @@
 	}
 
 	onMount(async () => {
-		// Sites personalizados (para "abrir no site"): o que o app já guardou ao entrar.
+		// Custom sites (for "open on site"): what the app already stored on startup.
 		void (async () => {
 			try {
 				customSites = (await storage.getItem<CustomSite[]>(STORAGE_KEYS.customSites)) ?? [];
@@ -171,7 +171,7 @@
 
 	function changeProgress(next: number) {
 		progress = next;
-		// Mexer no progresso de algo planejado já conta como começar, como no AniList.
+		// Changing the progress of something planned already counts as starting, like on AniList.
 		if (status === 'PLANNING' && next > 0) status = 'CURRENT';
 		if (total && next >= total) status = 'COMPLETED';
 	}
@@ -192,7 +192,7 @@
 	}
 
 	async function remove() {
-		// O "Remover" do diálogo não fecha sozinho (bits-ui); sem isso a tela ficava presa.
+		// The dialog's "Remove" does not close by itself (bits-ui); without this the screen got stuck.
 		confirmRemove = { open: false };
 		if (!app.api) return;
 		try {
@@ -200,7 +200,7 @@
 			fill(null);
 			toast.success(m['sync.media.removed']());
 		} catch (error) {
-			// Já tinha saído da lista (outro dispositivo, outro clique): o resultado é o mesmo.
+			// It had already left the list (another device, another click): the result is the same.
 			if (error instanceof ApiError && error.status === 404) fill(null);
 			else await app.handleError(error);
 		}
@@ -267,7 +267,7 @@
 						style={media.coverColor ? `background-color:${media.coverColor}` : undefined}
 					/>
 				{:else}
-					<!-- Sem capa: bloco liso em vez do ícone de imagem quebrada do navegador. -->
+					<!-- No cover: a plain block instead of the browser's broken image icon. -->
 					<div
 						class="relative h-36 w-24 flex-none rounded-inner bg-surface shadow-lift"
 						style={media.coverColor ? `background-color:${media.coverColor}` : undefined}
@@ -282,7 +282,7 @@
 		</section>
 
 		<div>
-			<!-- Título longo fica em 3 linhas; um toque mostra inteiro. -->
+			<!-- A long title takes 3 lines; a tap shows it whole. -->
 			<button
 				type="button"
 				class="block w-full cursor-pointer text-left"
@@ -444,12 +444,12 @@
 									? 'bg-surface text-foreground'
 									: 'bg-primary text-primary-foreground'}"
 							>
-								<!-- Ícone cheio e traço grosso: o fino sumia dentro da bolinha. -->
+								<!-- Filled icon and thick stroke: the thin one vanished inside the dot. -->
 								{#if link.kind === 'search'}
 									<SearchIcon size={16} strokeWidth={3} />
 								{:else}
-									<!-- Triângulo centrado pelo centro de massa (12,12), não pela caixa: o
-									     play do Lucide parecia torto dentro da bolinha. -->
+									<!-- Triangle centered on its center of mass (12,12), not its box: Lucide's
+									     play looked crooked inside the dot. -->
 									<svg
 										viewBox="0 0 24 24"
 										class="size-5"

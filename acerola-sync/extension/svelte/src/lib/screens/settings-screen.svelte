@@ -52,16 +52,16 @@
 		progressPattern: ''
 	});
 	let draft = $state<CustomSiteInput>(emptyDraft());
-	/** Site sendo editado; `null` = cadastro novo. */
+	/** Site being edited; `null` = new site. */
 	let editing = $state<CustomSite | null>(null);
 	let sampleUrl = $state('');
-	/** Modo avançado: o dialog cresce (só na página cheia) e mostra a fonte do número. */
+	/** Advanced mode: the dialog grows (only on the full page) and shows the number source. */
 	let advanced = $state(false);
 	let testing = $state(false);
 	let testResult = $state<SiteTestResult | null>(null);
 	const fromPage = $derived(readsProgressFromPage(draft));
 
-	/** Prévia do que a regex tira da URL de exemplo, antes de salvar. */
+	/** Preview of what the regex pulls from the sample URL, before saving. */
 	const preview = $derived.by(() => {
 		if (!sampleUrl.trim() || !draft.urlPattern.trim()) return null;
 		try {
@@ -85,7 +85,7 @@
 			(draft.progressSource !== 'selector' || !!draft.progressSelector?.trim())
 	);
 
-	/** Sites ligados sem a permissão do domínio: o script não roda lá até liberar. */
+	/** Sites turned on without the domain permission: the script does not run there until granted. */
 	let missingPermission = $state<string[]>([]);
 
 	async function checkPermissions() {
@@ -96,7 +96,7 @@
 			try {
 				if (!(await browser.permissions.contains({ origins: [origin] }))) missing.push(site.id);
 			} catch {
-				// Navegador sem a API: não dá para saber, não avisa.
+				// Browser without the API: no way to know, no warning.
 			}
 		}
 		missingPermission = missing;
@@ -131,7 +131,7 @@
 
 	type PendingSiteDraft = { draft: CustomSiteInput; editingId: string | null };
 
-	/** Popup pediu o modo avançado: reabre aqui o mesmo rascunho, já com o dialog grande. */
+	/** The popup asked for advanced mode: reopen the same draft here, already with the large dialog. */
 	async function resumeFromPopup() {
 		const pending = await storage.getItem<PendingSiteDraft>(STORAGE_KEYS.pendingSiteDraft);
 		await storage.removeItem(STORAGE_KEYS.pendingSiteDraft);
@@ -142,7 +142,7 @@
 		advanced = true;
 	}
 
-	/** No popup não cabe: leva o rascunho para a página cheia, que abre no modo avançado. */
+	/** It does not fit in the popup: carry the draft to the full page, which opens in advanced mode. */
 	async function openAdvanced() {
 		if (page) {
 			advanced = !advanced;
@@ -157,7 +157,7 @@
 	}
 
 	async function testOnTab() {
-		// Pedido no clique, antes de qualquer await: sem a permissão não dá para ler a aba.
+		// Requested on click, before any await: without the permission the tab cannot be read.
 		const granted = requestOrigin(draft.matchPattern);
 		testing = true;
 		testResult = null;
@@ -189,7 +189,7 @@
 		await storage.setItem(STORAGE_KEYS.mangaDelaySeconds, mangaDelay);
 	}
 
-	/** Pede a permissão do domínio: precisa acontecer no clique, antes de qualquer `await`. */
+	/** Requests the domain permission: it must happen on click, before any `await`. */
 	function requestOrigin(matchPattern: string) {
 		const origin = originPattern(matchPattern);
 		return origin ? browser.permissions.request({ origins: [origin] }) : Promise.resolve(false);
@@ -222,7 +222,7 @@
 		};
 		sampleUrl = '';
 		testResult = null;
-		// Site com o número na página só se edita no modo avançado (no popup, na página cheia).
+		// A site with the number on the page is only edited in advanced mode (in the popup, on the full page).
 		advanced = readsProgressFromPage(site);
 		if (advanced && !page) {
 			void openAdvanced();
@@ -234,8 +234,8 @@
 	async function saveSite() {
 		if (!app.api) return;
 		const current = editing;
-		// Ligado = precisa da permissão do domínio. Se já foi dada, o navegador responde na hora
-		// sem perguntar; se não (site cadastrado fora da tela), é aqui que ela é pedida.
+		// On = needs the domain permission. If already granted, the browser answers right away
+		// without asking; if not (site added outside the screen), this is where it is requested.
 		const granted = draft.enabled ? requestOrigin(draft.matchPattern) : Promise.resolve(true);
 		try {
 			if (!(await granted)) {
@@ -299,7 +299,7 @@
 		</h1>
 	</header>
 
-	<!-- Perfil: cartão de cor sólida com avatar grande. -->
+	<!-- Profile: solid color card with a large avatar. -->
 	<section class="flex items-center gap-4 rounded-card bg-primary p-4 text-primary-foreground">
 		{#if app.session?.user.avatarUrl}
 			<img src={app.session.user.avatarUrl} alt="" class="size-16 rounded-full object-cover" />
@@ -543,7 +543,7 @@
 		</div>
 
 		{#if advanced && page}
-			<!-- Modo avançado: de onde sai o número e o teste numa aba aberta do site. -->
+			<!-- Advanced mode: where the number comes from and the test on an open tab of the site. -->
 			<section class="flex flex-col gap-2.5 rounded-tile bg-surface p-4" data-advanced>
 				<h3 class="text-sm font-black">{m['sync.settings.custom.progress.title']()}</h3>
 				<AcerolaChipTabs
