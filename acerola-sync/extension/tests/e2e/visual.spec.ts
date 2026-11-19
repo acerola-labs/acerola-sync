@@ -54,7 +54,10 @@ async function signIn(context: BrowserContext) {
 		([server]) =>
 			chrome.storage.local.set({
 				serverUrl: server,
-				session: { token: 'tok', user: { id: 1, name: 'vinicius', avatarUrl: null, siteUrl: null } }
+				session: {
+					token: 'tok',
+					user: { id: 1, name: 'vinicius', avatarUrl: null, siteUrl: null }
+				}
 			}),
 		[SERVER]
 	);
@@ -109,7 +112,10 @@ async function mockServer(page: Pick<Page, 'route'> | BrowserContext) {
 			});
 		if (url.pathname === '/history' || url.pathname === '/custom-sites')
 			return route.fulfill({ json: [] });
-		return route.fulfill({ status: 404, json: { errorType: 'not_found', message: url.pathname } });
+		return route.fulfill({
+			status: 404,
+			json: { errorType: 'not_found', message: url.pathname }
+		});
 	});
 }
 
@@ -151,7 +157,9 @@ async function expectAligned(container: Locator, underline = false) {
 					box.x - indicator.x,
 					indicator.x + indicator.width - (box.x + box.width)
 				);
-				return underline || outside <= 0.05 ? 'ok' : `pílula cortada ${outside.toFixed(2)}px`;
+				return underline || outside <= 0.05
+					? 'ok'
+					: `pílula cortada ${outside.toFixed(2)}px`;
 			},
 			{ timeout: 3000 }
 		)
@@ -231,7 +239,9 @@ test('troca de tipo não faz o cabeçalho pular', async ({ context, page, extens
 		await page.waitForTimeout(wait);
 		const now = await layout();
 		expect(Math.abs(now.tabs.y - before.tabs.y), `abas em ${wait}ms`).toBeLessThanOrEqual(1);
-		expect(Math.abs(now.search.y - before.search.y), `busca em ${wait}ms`).toBeLessThanOrEqual(1);
+		expect(Math.abs(now.search.y - before.search.y), `busca em ${wait}ms`).toBeLessThanOrEqual(
+			1
+		);
 		expect(now.tabs.height).toBeCloseTo(before.tabs.height, 0);
 	}
 	await expect(page.getByText('Chainsaw Man').first()).toBeVisible();
@@ -423,7 +433,9 @@ test('modo avançado do site: popup leva para a página cheia e o diálogo cresc
 	const chapter = await context.newPage();
 	await chapter.goto('https://sakuramangas.org/read/2507/463111');
 	await full.bringToFront();
-	await dialog.getByPlaceholder('https://leitor.exemplo.com/*').fill('https://sakuramangas.org/*');
+	await dialog
+		.getByPlaceholder('https://leitor.exemplo.com/*')
+		.fill('https://sakuramangas.org/*');
 	await dialog.getByPlaceholder(/\/read\//).fill('/read/(?<id>\\d+)/\\d+');
 
 	// Source in the URL: does not find the number, but suggests the page title.
@@ -435,7 +447,9 @@ test('modo avançado do site: popup leva para a página cheia e o diálogo cresc
 	await expect(dialog.locator('[data-test-result]')).toContainText(
 		/Obra: 2507 · número: 30|Media: 2507 · number: 30/
 	);
-	await expect(dialog.getByRole('tab', { selected: true, name: /Título da página/ })).toBeVisible();
+	await expect(
+		dialog.getByRole('tab', { selected: true, name: /Título da página/ })
+	).toBeVisible();
 	await expectAligned(dialog.locator('[data-advanced]').getByRole('tablist'));
 	await full.waitForTimeout(400);
 	await dialog.screenshot({ path: `${SHOTS}/08b-site-avancado-teste.png` });

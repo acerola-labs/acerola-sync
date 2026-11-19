@@ -43,7 +43,10 @@ test('número no ícone e aviso só do episódio que saiu depois da primeira olh
 		([server]) =>
 			chrome.storage.local.set({
 				serverUrl: server,
-				session: { token: 'tok', user: { id: 1, name: 'v', avatarUrl: null, siteUrl: null } }
+				session: {
+					token: 'tok',
+					user: { id: 1, name: 'v', avatarUrl: null, siteUrl: null }
+				}
 			}),
 		[SERVER]
 	);

@@ -94,7 +94,8 @@
 			const origin = originPattern(site.matchPattern);
 			if (!site.enabled || !origin) continue;
 			try {
-				if (!(await browser.permissions.contains({ origins: [origin] }))) missing.push(site.id);
+				if (!(await browser.permissions.contains({ origins: [origin] })))
+					missing.push(site.id);
 			} catch {
 				// Browser without the API: no way to know, no warning.
 			}
@@ -180,7 +181,9 @@
 	}
 
 	async function toggleSite(id: string, enabled: boolean) {
-		disabledSites = enabled ? disabledSites.filter((site) => site !== id) : [...disabledSites, id];
+		disabledSites = enabled
+			? disabledSites.filter((site) => site !== id)
+			: [...disabledSites, id];
 		await storage.setItem(STORAGE_KEYS.disabledSites, $state.snapshot(disabledSites));
 	}
 
@@ -302,7 +305,11 @@
 	<!-- Profile: solid color card with a large avatar. -->
 	<section class="flex items-center gap-4 rounded-card bg-primary p-4 text-primary-foreground">
 		{#if app.session?.user.avatarUrl}
-			<img src={app.session.user.avatarUrl} alt="" class="size-16 rounded-full object-cover" />
+			<img
+				src={app.session.user.avatarUrl}
+				alt=""
+				class="size-16 rounded-full object-cover"
+			/>
 		{:else}
 			<span
 				class="flex size-16 items-center justify-center rounded-full bg-background/20 text-2xl font-black"
@@ -393,7 +400,10 @@
 	</AcerolaSection>
 
 	<AcerolaSection
-		data={{ title: m['sync.settings.custom.title.label'](), hint: m['sync.settings.custom.hint']() }}
+		data={{
+			title: m['sync.settings.custom.title.label'](),
+			hint: m['sync.settings.custom.hint']()
+		}}
 	>
 		{#snippet actions()}
 			<button
@@ -429,7 +439,9 @@
 						</div>
 						<AcerolaSwitch
 							state={{ checked: site.enabled }}
-							events={{ onCheckedChange: (checked) => toggleCustomSite(site, checked) }}
+							events={{
+								onCheckedChange: (checked) => toggleCustomSite(site, checked)
+							}}
 						/>
 						<button
 							type="button"
@@ -595,7 +607,9 @@
 
 				{#if testResult}
 					{#if testResult.status === 'no-tab'}
-						<p class="rounded-inner bg-warning-soft px-4 py-2.5 text-xs font-bold text-warning">
+						<p
+							class="rounded-inner bg-warning-soft px-4 py-2.5 text-xs font-bold text-warning"
+						>
 							{m['sync.settings.custom.test.noTab']()}
 						</p>
 					{:else if testResult.status === 'error'}

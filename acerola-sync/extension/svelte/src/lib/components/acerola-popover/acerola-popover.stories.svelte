@@ -57,8 +57,7 @@
 	parameters={{
 		docs: {
 			description: {
-				story:
-					'Estado inicial fechado. Este e o comportamento padrao para menus contextuais, dicas expandidas e acoes secundarias reveladas sob demanda.'
+				story: 'Estado inicial fechado. Este e o comportamento padrao para menus contextuais, dicas expandidas e acoes secundarias reveladas sob demanda.'
 			}
 		}
 	}}
@@ -71,8 +70,7 @@
 	parameters={{
 		docs: {
 			description: {
-				story:
-					'Estado inicial aberto. E util para inspecao visual, validacao de layout e casos em que o conteudo precisa aparecer imediatamente por regra de negocio ou onboarding.'
+				story: 'Estado inicial aberto. E util para inspecao visual, validacao de layout e casos em que o conteudo precisa aparecer imediatamente por regra de negocio ou onboarding.'
 			}
 		}
 	}}

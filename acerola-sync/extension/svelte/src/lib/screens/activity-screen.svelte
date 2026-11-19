@@ -109,7 +109,9 @@
 			return;
 		}
 		try {
-			const utc = scheduleTimes.map((time) => saoPauloToUtc(time)).filter((t): t is string => !!t);
+			const utc = scheduleTimes
+				.map((time) => saoPauloToUtc(time))
+				.filter((t): t is string => !!t);
 			await app.api.saveSchedule(scheduleEnabled, utc);
 			toast.success(m['sync.activity.schedule.saved']());
 		} catch (error) {
@@ -148,7 +150,11 @@
 		data={{
 			items: [
 				{ id: 'sync', label: m['sync.activity.tab.sync']() },
-				{ id: 'history', label: m['sync.activity.tab.history'](), count: history.length || null }
+				{
+					id: 'history',
+					label: m['sync.activity.tab.history'](),
+					count: history.length || null
+				}
 			],
 			active: tab
 		}}
@@ -233,7 +239,11 @@
 			data={{ title: m['sync.activity.logs.label'](), hint: m['sync.activity.logs.hint']() }}
 		>
 			<AcerolaLogConsole
-				data={{ logs: watcher.logs, running: watcher.running, empty: m['sync.activity.noLogs']() }}
+				data={{
+					logs: watcher.logs,
+					running: watcher.running,
+					empty: m['sync.activity.noLogs']()
+				}}
 			/>
 		</AcerolaSection>
 
@@ -249,7 +259,10 @@
 		{/if}
 
 		<AcerolaSection
-			data={{ title: m['sync.activity.schedule.label'](), hint: m['sync.activity.schedule.hint']() }}
+			data={{
+				title: m['sync.activity.schedule.label'](),
+				hint: m['sync.activity.schedule.hint']()
+			}}
 		>
 			{#snippet actions()}
 				<AcerolaSwitch
@@ -260,7 +273,9 @@
 			<div class="flex flex-col gap-3 rounded-card bg-card p-4">
 				<div class="flex flex-wrap gap-2" use:staggerIn={{ key: scheduleTimes.length }}>
 					{#each scheduleTimes as time (time)}
-						<span class="flex items-center gap-2 rounded-full bg-surface py-1.5 pr-1.5 pl-3.5">
+						<span
+							class="flex items-center gap-2 rounded-full bg-surface py-1.5 pr-1.5 pl-3.5"
+						>
 							<span class="text-lg leading-none font-black tabular-nums">{time}</span>
 							<span class="text-[10px] font-bold text-muted-foreground">
 								{shortUtc(saoPauloToUtc(time) ?? '')} UTC
@@ -269,13 +284,16 @@
 								type="button"
 								class="flex size-6 cursor-pointer items-center justify-center rounded-full bg-background text-muted-foreground hover:text-destructive"
 								aria-label={m['sync.common.remove']()}
-								onclick={() => (scheduleTimes = scheduleTimes.filter((item) => item !== time))}
+								onclick={() =>
+									(scheduleTimes = scheduleTimes.filter((item) => item !== time))}
 							>
 								<XIcon size={12} />
 							</button>
 						</span>
 					{:else}
-						<span class="text-xs text-muted-foreground">{m['sync.activity.noTimes']()}</span>
+						<span class="text-xs text-muted-foreground"
+							>{m['sync.activity.noTimes']()}</span
+						>
 					{/each}
 				</div>
 				<div class="flex items-center gap-2">
@@ -344,7 +362,9 @@
 											: 'bg-success'}"
 								></span>
 								<span class="flex-1 text-sm font-bold">{runLabel(run)}</span>
-								<span class="text-xs text-muted-foreground">{formatDateTime(run.startedAt)}</span>
+								<span class="text-xs text-muted-foreground"
+									>{formatDateTime(run.startedAt)}</span
+								>
 							</button>
 						</li>
 					{/each}

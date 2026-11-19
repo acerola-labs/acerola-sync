@@ -45,7 +45,10 @@ const config: StorybookConfig = {
 					}
 				},
 				optimizeDeps: {
-					entries: ['../svelte/src/**/*.stories.@(js|ts|svelte)', '../svelte/src/**/*.svelte'],
+					entries: [
+						'../svelte/src/**/*.stories.@(js|ts|svelte)',
+						'../svelte/src/**/*.svelte'
+					],
 					holdUntilResolved: true,
 					include: [
 						'svelte',

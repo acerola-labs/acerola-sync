@@ -13,7 +13,10 @@ describe('AcerolaChipTabs', () => {
 	it('mostra as contagens e a aba ativa', () => {
 		render(AcerolaChipTabs, { props: { data: { items, active: 'COMPLETED' } } });
 
-		expect(screen.getByRole('tab', { name: /Completo/ })).toHaveAttribute('aria-selected', 'true');
+		expect(screen.getByRole('tab', { name: /Completo/ })).toHaveAttribute(
+			'aria-selected',
+			'true'
+		);
 		expect(screen.getByRole('tab', { name: /Assistindo/ })).toHaveAttribute(
 			'aria-selected',
 			'false'

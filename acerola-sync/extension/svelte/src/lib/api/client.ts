@@ -87,7 +87,11 @@ export function createApi(serverUrl: string, sessionToken?: string | null, fetch
 				body: body === undefined ? undefined : JSON.stringify(body)
 			});
 		} catch (error) {
-			throw new ApiError(0, 'network', error instanceof Error ? error.message : String(error));
+			throw new ApiError(
+				0,
+				'network',
+				error instanceof Error ? error.message : String(error)
+			);
 		}
 
 		if (response.status === 204) return undefined as T;
@@ -152,7 +156,8 @@ export function createApi(serverUrl: string, sessionToken?: string | null, fetch
 		media: (mediaId: number) => request<MediaDetail>('GET', `/media/${mediaId}`),
 
 		/** Starts the sync and returns right away; progress comes through `syncLogs`. */
-		sync: (full = false) => request<SyncRun>('POST', withQuery('/sync', { full: full || null })),
+		sync: (full = false) =>
+			request<SyncRun>('POST', withQuery('/sync', { full: full || null })),
 		syncLogs: (runId: number, after = 0) =>
 			request<SyncLogs>('GET', withQuery(`/sync/runs/${runId}/logs`, { after })),
 		syncStatus: () => request<SyncStatus>('GET', '/sync/status'),
@@ -170,8 +175,12 @@ export function createApi(serverUrl: string, sessionToken?: string | null, fetch
 		}) => request<Resolved | null>('POST', '/track/resolve', input),
 		track: (input: { site: string; mediaId: number; progress: number; url?: string }) =>
 			request<TrackResult>('POST', '/track/progress', input),
-		saveMapping: (input: { site: string; identifier: string; mediaId: number; title?: string }) =>
-			request<SiteMapping>('PUT', '/track/mapping', input),
+		saveMapping: (input: {
+			site: string;
+			identifier: string;
+			mediaId: number;
+			title?: string;
+		}) => request<SiteMapping>('PUT', '/track/mapping', input),
 		deleteMapping: (site: string, identifier: string) =>
 			request<void>('DELETE', withQuery('/track/mapping', { site, identifier })),
 		history: (limit = 50) => request<HistoryItem[]>('GET', withQuery('/history', { limit })),

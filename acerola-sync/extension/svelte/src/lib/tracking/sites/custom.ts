@@ -36,7 +36,10 @@ export function createCustomAdapter(site: CustomSite): SiteAdapter {
 	let repeated = { href: '', count: 0 };
 
 	function pageProgress(url: URL, doc: Document): number | null {
-		const progress = progressFromSnapshot(site, snapshotPage(site.progressSelector ?? null, doc));
+		const progress = progressFromSnapshot(
+			site,
+			snapshotPage(site.progressSelector ?? null, doc)
+		);
 		if (!progress) return null;
 		if (accepted && accepted.href !== url.href && accepted.progress === progress) {
 			repeated =

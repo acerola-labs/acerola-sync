@@ -105,7 +105,9 @@
 						<div class="min-w-0 flex-1">
 							<p class="line-clamp-2 text-sm leading-tight font-bold">{item.title}</p>
 							<p class="text-xs text-muted-foreground">
-								{m['sync.airing.episode']({ episode: item.episode })} · {formatDateTime(item.at)}
+								{m['sync.airing.episode']({ episode: item.episode })} · {formatDateTime(
+									item.at
+								)}
 							</p>
 						</div>
 						{#if !item.read}

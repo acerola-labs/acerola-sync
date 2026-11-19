@@ -53,7 +53,9 @@
 			<header class="flex items-start gap-3">
 				<div class="flex min-w-0 flex-1 flex-col gap-1">
 					{#if data.eyebrow}
-						<span class="text-xs font-semibold text-muted-foreground">{data.eyebrow}</span>
+						<span class="text-xs font-semibold text-muted-foreground"
+							>{data.eyebrow}</span
+						>
 					{/if}
 					<Dialog.Title class="text-2xl leading-tight font-black tracking-tight">
 						{data.title}

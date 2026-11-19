@@ -108,7 +108,9 @@ describe('HomeScreen', () => {
 			pending: false
 		});
 		render(HomeScreen);
-		const card = (await screen.findByText('Dandadan')).closest('[data-media-card]') as HTMLElement;
+		const card = (await screen.findByText('Dandadan')).closest(
+			'[data-media-card]'
+		) as HTMLElement;
 
 		const buttons = card.querySelectorAll('button');
 		await user.click(buttons[buttons.length - 1]);

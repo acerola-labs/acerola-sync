@@ -29,7 +29,8 @@ export const sakuraMangas: SiteAdapter = {
 		const progress = parseProgress(parts.chapter);
 		if (!progress) return null;
 
-		const title = doc.querySelector('#id-titulo')?.textContent?.trim() || humanizeSlug(parts.slug);
+		const title =
+			doc.querySelector('#id-titulo')?.textContent?.trim() || humanizeSlug(parts.slug);
 		return {
 			site: this.id,
 			identifier: parts.slug,

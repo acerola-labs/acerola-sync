@@ -46,7 +46,11 @@ describe('ActivityScreen', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		api.syncStatus.mockResolvedValue({
-			settings: { scheduleEnabled: true, scheduleTimes: ['12:00:00'], fullSyncEveryHours: 24 },
+			settings: {
+				scheduleEnabled: true,
+				scheduleTimes: ['12:00:00'],
+				fullSyncEveryHours: 24
+			},
 			runs: [],
 			running: false,
 			pendingEntries: 0
@@ -129,6 +133,8 @@ describe('ActivityScreen', () => {
 
 		await userEvent.setup().click(within(tabs).getByRole('tab', { name: /Semanal|Weekly/ }));
 		expect(api.saveFullSyncInterval).toHaveBeenCalledWith(168);
-		expect(within(tabs).getByRole('tab', { selected: true })).toHaveTextContent(/Semanal|Weekly/);
+		expect(within(tabs).getByRole('tab', { selected: true })).toHaveTextContent(
+			/Semanal|Weekly/
+		);
 	});
 });

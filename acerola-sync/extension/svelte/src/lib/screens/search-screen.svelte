@@ -44,7 +44,11 @@
 		}
 		loading = true;
 		try {
-			hits = await app.api.search(q, type === 'ALL' ? undefined : (type as MediaType), remote);
+			hits = await app.api.search(
+				q,
+				type === 'ALL' ? undefined : (type as MediaType),
+				remote
+			);
 			searched = true;
 		} catch (error) {
 			await app.handleError(error);
@@ -68,7 +72,9 @@
 	{#if !hideHeader}
 		<header>
 			<p class="text-xs font-semibold text-muted-foreground">{m['sync.search.eyebrow']()}</p>
-			<h1 class="leading-none font-black tracking-tighter {page ? 'text-6xl' : 'text-[44px]'}">
+			<h1
+				class="leading-none font-black tracking-tighter {page ? 'text-6xl' : 'text-[44px]'}"
+			>
 				{m['sync.search.title']()}
 			</h1>
 		</header>
@@ -127,7 +133,9 @@
 					}}
 					events={{
 						onOpen: () =>
-							onPick ? onPick(hit) : app.push({ name: 'media', mediaId: hit.media.id })
+							onPick
+								? onPick(hit)
+								: app.push({ name: 'media', mediaId: hit.media.id })
 					}}
 				/>
 			{/each}
