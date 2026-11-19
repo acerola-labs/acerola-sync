@@ -97,7 +97,9 @@
 	>
 		<BellIcon size={page ? 16 : 14} />
 		{#if unread > 0}
-			<span class="absolute top-0.5 right-0.5 size-2.5 rounded-full bg-success" data-unread-dot
+			<span
+				class="absolute top-0.5 right-0.5 size-2.5 rounded-full bg-success"
+				data-unread-dot
 			></span>
 		{/if}
 	</button>

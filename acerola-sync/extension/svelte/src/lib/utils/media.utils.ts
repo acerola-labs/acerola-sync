@@ -54,7 +54,8 @@ export function splitList(entries: EntryWithMedia[]) {
 	const airing = anime
 		.filter((entry) => entry.media.status === 'RELEASING' && entry.media.nextAiringAt)
 		.sort(
-			(a, b) => Date.parse(a.media.nextAiringAt ?? '') - Date.parse(b.media.nextAiringAt ?? '')
+			(a, b) =>
+				Date.parse(a.media.nextAiringAt ?? '') - Date.parse(b.media.nextAiringAt ?? '')
 		);
 	const airingIds = new Set(airing.map((entry) => entry.mediaId));
 

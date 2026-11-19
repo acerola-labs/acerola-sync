@@ -117,7 +117,9 @@
 			[m['sync.media.info.end'](), formatDate(media.endDate)],
 			[
 				m['sync.media.info.season'](),
-				media.season ? `${seasonLabel(media.season)} ${media.seasonYear ?? ''}`.trim() : null
+				media.season
+					? `${seasonLabel(media.season)} ${media.seasonYear ?? ''}`.trim()
+					: null
 			],
 			[m['sync.media.info.studios'](), media.studios?.join(', ')],
 			[m['sync.media.info.source'](), media.source && humanizeEnum(media.source)],
@@ -253,7 +255,9 @@
 					<img
 						src={media.bannerUrl ?? media.coverUrl}
 						alt=""
-						class="h-full w-full object-cover {media.bannerUrl ? '' : 'scale-125 blur-2xl'}"
+						class="h-full w-full object-cover {media.bannerUrl
+							? ''
+							: 'scale-125 blur-2xl'}"
 					/>
 				{/if}
 				<div class="absolute inset-0 bg-linear-to-t from-scrim/70 to-transparent"></div>
@@ -264,18 +268,24 @@
 						src={media.coverUrl}
 						alt=""
 						class="relative h-36 w-24 flex-none rounded-inner object-cover shadow-lift"
-						style={media.coverColor ? `background-color:${media.coverColor}` : undefined}
+						style={media.coverColor
+							? `background-color:${media.coverColor}`
+							: undefined}
 					/>
 				{:else}
 					<!-- No cover: a plain block instead of the browser's broken image icon. -->
 					<div
 						class="relative h-36 w-24 flex-none rounded-inner bg-surface shadow-lift"
-						style={media.coverColor ? `background-color:${media.coverColor}` : undefined}
+						style={media.coverColor
+							? `background-color:${media.coverColor}`
+							: undefined}
 					></div>
 				{/if}
 				<div class="flex min-w-0 flex-wrap gap-1.5 pb-1">
 					{#each chips as chip (chip)}
-						<span class="rounded-full bg-surface px-2.5 py-1 text-[11px] font-bold">{chip}</span>
+						<span class="rounded-full bg-surface px-2.5 py-1 text-[11px] font-bold"
+							>{chip}</span
+						>
 					{/each}
 				</div>
 			</div>
@@ -290,8 +300,8 @@
 				title={media.titleUserPreferred}
 			>
 				<h1
-					class="leading-[1.02] font-black tracking-tighter break-words {media.titleUserPreferred
-						.length > 60
+					class="leading-[1.02] font-black tracking-tighter break-words {media
+						.titleUserPreferred.length > 60
 						? 'text-2xl'
 						: 'text-3xl'} {titleOpen ? '' : 'line-clamp-3'}"
 				>
@@ -299,18 +309,27 @@
 				</h1>
 			</button>
 			{#if media.titleEnglish && media.titleEnglish !== media.titleUserPreferred}
-				<p class="mt-1 line-clamp-2 text-sm text-muted-foreground" title={media.titleEnglish}>
+				<p
+					class="mt-1 line-clamp-2 text-sm text-muted-foreground"
+					title={media.titleEnglish}
+				>
 					{media.titleEnglish}
 				</p>
 			{/if}
 			{#if media.genres.length}
-				<p class="mt-2 text-xs font-semibold text-muted-foreground">{media.genres.join(' · ')}</p>
+				<p class="mt-2 text-xs font-semibold text-muted-foreground">
+					{media.genres.join(' · ')}
+				</p>
 			{/if}
 		</div>
 
 		<div class="grid grid-cols-3 gap-2" use:staggerIn>
 			<AcerolaStatTile
-				data={{ label: m['sync.media.average'](), value: media.averageScore ?? '—', hint: '%' }}
+				data={{
+					label: m['sync.media.average'](),
+					value: media.averageScore ?? '—',
+					hint: '%'
+				}}
 				ui={{ tone: 'primary' }}
 			/>
 			<AcerolaStatTile
@@ -374,7 +393,9 @@
 				events={{ onChange: changeProgress }}
 			/>
 
-			<label class="flex items-center justify-between gap-3 rounded-tile bg-surface px-4 py-2.5">
+			<label
+				class="flex items-center justify-between gap-3 rounded-tile bg-surface px-4 py-2.5"
+			>
 				<span class="text-sm font-bold">{m['sync.media.score.label']()}</span>
 				<input
 					type="range"
@@ -520,7 +541,9 @@
 								<span class="h-16 w-11 flex-none rounded-inner bg-surface"></span>
 							{/if}
 							<span class="flex min-w-0 flex-col">
-								<span class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+								<span
+									class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+								>
 									{relationLabel(relation.relationType)} · {relation.format
 										? formatLabel(relation.format)
 										: mediaTypeLabel(relation.mediaType)}

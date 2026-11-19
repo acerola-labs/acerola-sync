@@ -128,7 +128,8 @@ async function checkAiringNow() {
 		await storage.setItem(STORAGE_KEYS.airingSeen, result.seen);
 		await setBadge(result.behind);
 		if (result.fresh.length) {
-			const saved = (await storage.getItem<NotificationItem[]>(STORAGE_KEYS.notifications)) ?? [];
+			const saved =
+				(await storage.getItem<NotificationItem[]>(STORAGE_KEYS.notifications)) ?? [];
 			await storage.setItem(
 				STORAGE_KEYS.notifications,
 				addNotifications(saved, result.fresh, Date.now())

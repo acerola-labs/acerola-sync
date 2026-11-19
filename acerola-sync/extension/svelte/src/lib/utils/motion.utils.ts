@@ -4,7 +4,8 @@ import type { Action } from 'svelte/action';
 /// Whoever asks the system for reduced motion sees no animation: everything jumps to the final state.
 export function prefersReducedMotion(): boolean {
 	return (
-		typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+		typeof window !== 'undefined' &&
+		window.matchMedia('(prefers-reduced-motion: reduce)').matches
 	);
 }
 

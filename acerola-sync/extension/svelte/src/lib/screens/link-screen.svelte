@@ -36,7 +36,9 @@
 		<p class="text-xs font-semibold text-muted-foreground">
 			{request.site} · {mediaTypeLabel(request.mediaType)}
 		</p>
-		<h1 class="text-[44px] leading-none font-black tracking-tighter">{m['sync.link.title']()}</h1>
+		<h1 class="text-[44px] leading-none font-black tracking-tighter">
+			{m['sync.link.title']()}
+		</h1>
 		<p class="mt-2 text-sm text-muted-foreground">
 			{m['sync.link.subtitle']({ title: request.title })}
 		</p>

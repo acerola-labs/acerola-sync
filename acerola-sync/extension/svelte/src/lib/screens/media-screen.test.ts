@@ -98,7 +98,11 @@ describe('MediaScreen', () => {
 		await user.click(screen.getByRole('button', { name: '+1' }));
 		await user.click(screen.getByRole('button', { name: /^Save$|^Salvar$/ }));
 
-		expect(api.updateEntry).toHaveBeenCalledWith(1, { status: 'CURRENT', progress: 4, score: 0 });
+		expect(api.updateEntry).toHaveBeenCalledWith(1, {
+			status: 'CURRENT',
+			progress: 4,
+			score: 0
+		});
 	});
 
 	it('título longo fica cortado em 3 linhas e abre no toque', async () => {

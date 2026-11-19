@@ -173,7 +173,12 @@ function makeDraggable(fab: HTMLButtonElement) {
 			moved = true;
 			dock!.classList.add('dragging');
 			position = positionFromRect(
-				{ left: e.clientX - offsetX, top: e.clientY - offsetY, width: FAB_SIZE, height: FAB_SIZE },
+				{
+					left: e.clientX - offsetX,
+					top: e.clientY - offsetY,
+					width: FAB_SIZE,
+					height: FAB_SIZE
+				},
 				{ width: window.innerWidth, height: window.innerHeight }
 			);
 			applyPosition(position);

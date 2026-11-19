@@ -204,13 +204,17 @@
 		if (!app.api || busyIds.includes(entry.mediaId)) return;
 		busyIds = [...busyIds, entry.mediaId];
 		try {
-			const saved = await app.api.updateEntry(entry.mediaId, { progress: entry.progress + 1 });
+			const saved = await app.api.updateEntry(entry.mediaId, {
+				progress: entry.progress + 1
+			});
 			if (saved.pending) toast.warning(m['sync.home.savedPending']());
 			if (saved.status === status) {
 				entries = entries.map((item) => (item.mediaId === saved.mediaId ? saved : item));
 			} else {
 				entries = entries.filter((item) => item.mediaId !== saved.mediaId);
-				toast.success(m['sync.home.moved']({ status: statusLabel(saved.status, mediaType) }));
+				toast.success(
+					m['sync.home.moved']({ status: statusLabel(saved.status, mediaType) })
+				);
 				void loadCounts();
 			}
 		} catch (error) {
@@ -301,7 +305,10 @@
 				ui={{ tone: 'success' }}
 			/>
 			<AcerolaStatTile
-				data={{ label: statusLabel('PLANNING', mediaType), value: countOf(mediaType, 'PLANNING') }}
+				data={{
+					label: statusLabel('PLANNING', mediaType),
+					value: countOf(mediaType, 'PLANNING')
+				}}
 				ui={{ tone: 'info' }}
 			/>
 			<AcerolaStatTile
@@ -337,7 +344,11 @@
 				ui={{ busy: busyIds.includes(hereEntry.mediaId) }}
 			/>
 		{:else}
-			<section use:revealIn class="flex items-center gap-4 rounded-card bg-card p-4" data-here>
+			<section
+				use:revealIn
+				class="flex items-center gap-4 rounded-card bg-card p-4"
+				data-here
+			>
 				{#if here.resolved?.media.coverUrl}
 					<img
 						src={here.resolved.media.coverUrl}
@@ -346,14 +357,18 @@
 					/>
 				{/if}
 				<div class="flex min-w-0 flex-1 flex-col gap-1">
-					<span class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+					<span
+						class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+					>
 						{m['sync.home.here.label']({ site: hereSite })}
 					</span>
 					<p class="line-clamp-2 text-lg leading-tight font-black tracking-tight">
 						{here.resolved?.media.titleUserPreferred ?? here.page.title}
 					</p>
 					<p class="text-xs text-muted-foreground">
-						{here.resolved ? m['sync.home.here.notListed']() : m['sync.home.here.notFound']()}
+						{here.resolved
+							? m['sync.home.here.notListed']()
+							: m['sync.home.here.notFound']()}
 					</p>
 				</div>
 				{#if here.resolved}
@@ -361,7 +376,8 @@
 						type="button"
 						class="h-10 flex-none cursor-pointer rounded-full bg-primary px-4 text-xs font-black text-primary-foreground"
 						onclick={() =>
-							here.resolved && app.push({ name: 'media', mediaId: here.resolved.media.id })}
+							here.resolved &&
+							app.push({ name: 'media', mediaId: here.resolved.media.id })}
 					>
 						{m['sync.home.here.open']()}
 					</button>
@@ -390,7 +406,11 @@
 
 	{#if spotlight}
 		<AcerolaSpotlight
-			data={{ entry: spotlight, eyebrow: m['sync.home.continue'](), caption: caption(spotlight) }}
+			data={{
+				entry: spotlight,
+				eyebrow: m['sync.home.continue'](),
+				caption: caption(spotlight)
+			}}
 			events={{
 				onOpen: () => app.push({ name: 'media', mediaId: spotlight.mediaId }),
 				onIncrement: () => increment(spotlight)
@@ -404,7 +424,9 @@
 			data={{
 				title: filtering
 					? m['sync.filters.empty']()
-					: m['sync.home.empty.label']({ status: statusLabel(status, mediaType).toLowerCase() }),
+					: m['sync.home.empty.label']({
+							status: statusLabel(status, mediaType).toLowerCase()
+						}),
 				hint: m['sync.home.empty.hint'](),
 				icon: InboxIcon
 			}}
@@ -421,7 +443,12 @@
 			<!-- The first page cascades in; the next ones card by card as they arrive. -->
 			<div use:revealIn={{ y: 16, skip: index < firstPageSize }}>
 				<AcerolaMediaCard
-					data={{ media: entry.media, entry, subtitle: subtitle(entry), badge: badge(entry) }}
+					data={{
+						media: entry.media,
+						entry,
+						subtitle: subtitle(entry),
+						badge: badge(entry)
+					}}
 					events={{
 						onOpen: () => app.push({ name: 'media', mediaId: entry.mediaId }),
 						onIncrement:

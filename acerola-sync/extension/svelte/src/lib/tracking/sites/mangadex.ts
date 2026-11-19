@@ -108,7 +108,9 @@ export function createMangadex(fetcher: typeof fetch = (...args) => fetch(...arg
 		async detect(url) {
 			const id = chapterId(url);
 			if (!id) return null;
-			const response = await fetcher(`https://api.mangadex.org/chapter/${id}?includes[]=manga`);
+			const response = await fetcher(
+				`https://api.mangadex.org/chapter/${id}?includes[]=manga`
+			);
 			if (!response.ok) return null;
 			return parseMangadexChapter(await response.json(), url.href);
 		},

@@ -73,10 +73,18 @@ function waitForTrigger(adapter: SiteAdapter, onFire: () => void): Cancel {
 }
 
 async function track(page: DetectedPage, resolved: Resolved) {
-	const response = await sendMessage({ type: 'track:progress', page, mediaId: resolved.media.id });
+	const response = await sendMessage({
+		type: 'track:progress',
+		page,
+		mediaId: resolved.media.id
+	});
 	if (response.status !== 'tracked') {
 		if (response.status === 'error') {
-			showToast({ title: m['sync.tracking.failed'](), message: response.message, tone: 'error' });
+			showToast({
+				title: m['sync.tracking.failed'](),
+				message: response.message,
+				tone: 'error'
+			});
 		}
 		return;
 	}
@@ -128,7 +136,11 @@ async function handlePage(adapter: SiteAdapter, isCurrent: () => boolean): Promi
 		message: m['sync.tracking.detected']({ unit: unitLabel(page) }),
 		cover: resolved.media.coverUrl,
 		actions: [
-			{ label: m['sync.tracking.wrongMedia'](), onClick: () => openLink(page), secondary: true }
+			{
+				label: m['sync.tracking.wrongMedia'](),
+				onClick: () => openLink(page),
+				secondary: true
+			}
 		],
 		durationMs: DETECTED_TOAST_MS
 	});

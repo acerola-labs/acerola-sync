@@ -73,8 +73,7 @@
 	parameters={{
 		docs: {
 			description: {
-				story:
-					'Este exemplo monta o toaster e expoe um botao para disparar um toast de sucesso. Em uso real, o `AcerolaSonner` deve permanecer montado em um layout ou shell principal, enquanto os toasts podem ser chamados com `toast.success(...)`, `toast.error(...)` e variacoes semelhantes em eventos de acao, feedback de formulario e operacoes assincronas.'
+				story: 'Este exemplo monta o toaster e expoe um botao para disparar um toast de sucesso. Em uso real, o `AcerolaSonner` deve permanecer montado em um layout ou shell principal, enquanto os toasts podem ser chamados com `toast.success(...)`, `toast.error(...)` e variacoes semelhantes em eventos de acao, feedback de formulario e operacoes assincronas.'
 			}
 		}
 	}}

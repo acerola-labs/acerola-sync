@@ -115,7 +115,9 @@
 {/snippet}
 
 {#snippet group(title: string)}
-	<span class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">{title}</span>
+	<span class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase"
+		>{title}</span
+	>
 {/snippet}
 
 <div class={cn('flex flex-col gap-3', ui?.class)}>
@@ -174,8 +176,11 @@
 				{@render group(m['sync.filters.mediaStatus']())}
 				<div class="flex flex-wrap gap-1.5">
 					{#each MEDIA_STATUSES as status (status)}
-						{@render chip(mediaStatusLabel(status), data.value.mediaStatuses.includes(status), () =>
-							change({ mediaStatuses: toggle(data.value.mediaStatuses, status) })
+						{@render chip(
+							mediaStatusLabel(status),
+							data.value.mediaStatuses.includes(status),
+							() =>
+								change({ mediaStatuses: toggle(data.value.mediaStatuses, status) })
 						)}
 					{/each}
 				</div>
@@ -186,8 +191,10 @@
 					{@render group(m['sync.filters.format.label']())}
 					<div class="flex flex-wrap gap-1.5">
 						{#each data.facets.formats as format (format)}
-							{@render chip(formatLabel(format), data.value.formats.includes(format), () =>
-								change({ formats: toggle(data.value.formats, format) })
+							{@render chip(
+								formatLabel(format),
+								data.value.formats.includes(format),
+								() => change({ formats: toggle(data.value.formats, format) })
 							)}
 						{/each}
 					</div>

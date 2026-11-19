@@ -56,7 +56,9 @@
 					use:pop
 					class={cn(
 						'mb-2 grid size-14 place-items-center rounded-full',
-						danger ? 'bg-destructive-soft text-destructive' : 'bg-primary-soft text-primary'
+						danger
+							? 'bg-destructive-soft text-destructive'
+							: 'bg-primary-soft text-primary'
 					)}
 				>
 					<Icon size={26} />

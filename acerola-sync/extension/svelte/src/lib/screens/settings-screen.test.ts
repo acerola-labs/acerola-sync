@@ -188,7 +188,9 @@ describe('SettingsScreen — sites personalizados', () => {
 			screen.getByRole('textbox', { name: /Regex do número|Number regex/ }),
 			'Ep (\\d+)'
 		);
-		await user.click(screen.getByRole('button', { name: /Testar numa aba|Test on an open tab/ }));
+		await user.click(
+			screen.getByRole('button', { name: /Testar numa aba|Test on an open tab/ })
+		);
 		expect(
 			await screen.findByText(/Obra: x · número: 12|Media: x · number: 12/)
 		).toBeInTheDocument();

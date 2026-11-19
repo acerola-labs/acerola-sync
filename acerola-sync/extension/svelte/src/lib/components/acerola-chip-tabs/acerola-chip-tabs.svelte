@@ -118,7 +118,9 @@
 			>
 				{item.label}
 				{#if item.count !== undefined && item.count !== null}
-					<span class={cn('text-[10px] tabular-nums', active ? 'opacity-70' : 'opacity-60')}>
+					<span
+						class={cn('text-[10px] tabular-nums', active ? 'opacity-70' : 'opacity-60')}
+					>
 						{item.count}
 					</span>
 				{/if}
