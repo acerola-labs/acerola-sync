@@ -231,11 +231,11 @@ export const app = {
 		if (error instanceof ApiError && error.isUnauthorized) {
 			session = null;
 			await saveSession(null);
-			toast.error(m['sync.errors.session_expired']());
+			toast.error(m['sync.errors.sessionExpired']());
 			return;
 		}
 		if (error instanceof ApiError && error.status === 0) {
-			toast.error(m['sync.errors.server_offline']());
+			toast.error(m['sync.errors.serverOffline']());
 			return;
 		}
 		toast.error(error instanceof Error ? error.message : String(error));

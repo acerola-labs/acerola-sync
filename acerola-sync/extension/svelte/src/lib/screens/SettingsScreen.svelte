@@ -67,15 +67,15 @@
 		try {
 			const url = new URL(sampleUrl);
 			const key = createCustomAdapter({ ...draft, id: 'preview' }).pageKey(url);
-			if (!key) return { ok: false, text: m['sync.settings.custom.preview_none']() };
+			if (!key) return { ok: false, text: m['sync.settings.custom.preview.none']() };
 			if (fromPage) {
 				const id = new RegExp(draft.urlPattern).exec(url.href)?.groups?.id ?? '';
-				return { ok: true, text: m['sync.settings.custom.preview_page']({ id }) };
+				return { ok: true, text: m['sync.settings.custom.preview.page']({ id }) };
 			}
 			const [id, progress] = key.split('/');
-			return { ok: true, text: m['sync.settings.custom.preview']({ id, progress }) };
+			return { ok: true, text: m['sync.settings.custom.preview.label']({ id, progress }) };
 		} catch {
-			return { ok: false, text: m['sync.settings.custom.preview_none']() };
+			return { ok: false, text: m['sync.settings.custom.preview.none']() };
 		}
 	});
 	const canSave = $derived(
@@ -105,7 +105,7 @@
 	async function grantSite(site: CustomSite) {
 		const granted = requestOrigin(site.matchPattern);
 		if (!(await granted)) {
-			toast.error(m['sync.settings.custom.permission_denied']());
+			toast.error(m['sync.settings.custom.permissionDenied']());
 			return;
 		}
 		await refreshScripts();
@@ -163,7 +163,7 @@
 		testResult = null;
 		try {
 			if (!(await granted)) {
-				toast.error(m['sync.settings.custom.permission_denied']());
+				toast.error(m['sync.settings.custom.permissionDenied']());
 				return;
 			}
 			testResult = await testSiteOnTab($state.snapshot(draft));
@@ -239,7 +239,7 @@
 		const granted = draft.enabled ? requestOrigin(draft.matchPattern) : Promise.resolve(true);
 		try {
 			if (!(await granted)) {
-				toast.error(m['sync.settings.custom.permission_denied']());
+				toast.error(m['sync.settings.custom.permissionDenied']());
 				return;
 			}
 			const input = {
@@ -342,7 +342,7 @@
 	</AcerolaSection>
 
 	<AcerolaSection
-		data={{ title: m['sync.settings.sites'](), hint: m['sync.settings.sites_hint']() }}
+		data={{ title: m['sync.settings.sites.label'](), hint: m['sync.settings.sites.hint']() }}
 	>
 		<ul class="flex flex-col gap-1.5" use:staggerIn>
 			{#each BUILT_IN_SITES as site (site.id)}
@@ -353,8 +353,8 @@
 						<p class="text-xs text-muted-foreground">
 							{mediaTypeLabel(site.mediaType)} ·
 							{site.trigger === 'video'
-								? m['sync.settings.trigger_video']()
-								: m['sync.settings.trigger_delay']()}
+								? m['sync.settings.trigger.video']()
+								: m['sync.settings.trigger.delay']()}
 						</p>
 					</div>
 					<AcerolaSwitch
@@ -367,8 +367,8 @@
 
 		<div class="flex items-center justify-between gap-3 rounded-tile bg-card p-2.5 pl-4">
 			<div class="min-w-0">
-				<p class="text-sm font-bold">{m['sync.settings.manga_delay']()}</p>
-				<p class="text-xs text-muted-foreground">{m['sync.settings.manga_delay_hint']()}</p>
+				<p class="text-sm font-bold">{m['sync.settings.manga.delay']()}</p>
+				<p class="text-xs text-muted-foreground">{m['sync.settings.manga.delayHint']()}</p>
 			</div>
 			<div class="flex items-center gap-1 rounded-full bg-surface p-1">
 				<button
@@ -393,7 +393,7 @@
 	</AcerolaSection>
 
 	<AcerolaSection
-		data={{ title: m['sync.settings.custom.title'](), hint: m['sync.settings.custom.hint']() }}
+		data={{ title: m['sync.settings.custom.title.label'](), hint: m['sync.settings.custom.hint']() }}
 	>
 		{#snippet actions()}
 			<button
@@ -434,7 +434,7 @@
 						<button
 							type="button"
 							class="flex size-9 cursor-pointer items-center justify-center rounded-full text-muted-foreground hover:bg-surface hover:text-foreground"
-							aria-label={`${m['sync.settings.custom.edit']()} ${site.name}`}
+							aria-label={`${m['sync.settings.custom.edit.label']()} ${site.name}`}
 							onclick={() => openEdit(site)}
 							data-edit-site={site.id}
 						>
@@ -465,7 +465,7 @@
 			onclick={() => app.openFullPage()}
 		>
 			<ExpandIcon size={16} />
-			{m['sync.settings.open_page']()}
+			{m['sync.settings.openPage']()}
 		</button>
 	{/if}
 </div>
@@ -474,11 +474,11 @@
 	bind:state={dialog}
 	data={{
 		title: editing
-			? m['sync.settings.custom.edit_title']()
-			: m['sync.settings.custom.dialog_title'](),
+			? m['sync.settings.custom.edit.title']()
+			: m['sync.settings.custom.dialog.title'](),
 		description: fromPage
-			? m['sync.settings.custom.help_page']()
-			: m['sync.settings.custom.help'](),
+			? m['sync.settings.custom.help.page']()
+			: m['sync.settings.custom.help.label'](),
 		closeLabel: m['sync.tracking.close']()
 	}}
 	ui={{ class: advanced && page ? 'max-w-4xl' : undefined }}
@@ -517,18 +517,18 @@
 			/>
 			<input
 				class="{field} font-mono text-xs"
-				placeholder={m['sync.settings.custom.title_selector']()}
+				placeholder={m['sync.settings.custom.title.selector']()}
 				bind:value={draft.titleSelector}
 			/>
 			<input
 				class="{field} font-mono text-xs"
-				placeholder={`${m['sync.settings.custom.search_url']()} · https://site.com/busca?q={title}`}
-				aria-label={m['sync.settings.custom.search_url']()}
+				placeholder={`${m['sync.settings.custom.searchUrl']()} · https://site.com/busca?q={title}`}
+				aria-label={m['sync.settings.custom.searchUrl']()}
 				bind:value={draft.searchUrl}
 			/>
 			<input
 				class="{field} font-mono text-xs"
-				placeholder={m['sync.settings.custom.sample_url']()}
+				placeholder={m['sync.settings.custom.sampleUrl']()}
 				bind:value={sampleUrl}
 			/>
 			{#if preview}
@@ -545,13 +545,13 @@
 		{#if advanced && page}
 			<!-- Modo avançado: de onde sai o número e o teste numa aba aberta do site. -->
 			<section class="flex flex-col gap-2.5 rounded-tile bg-surface p-4" data-advanced>
-				<h3 class="text-sm font-black">{m['sync.settings.custom.progress_title']()}</h3>
+				<h3 class="text-sm font-black">{m['sync.settings.custom.progress.title']()}</h3>
 				<AcerolaChipTabs
 					data={{
 						items: [
-							{ id: 'url', label: m['sync.settings.custom.source_url']() },
-							{ id: 'title', label: m['sync.settings.custom.source_title']() },
-							{ id: 'selector', label: m['sync.settings.custom.source_selector']() }
+							{ id: 'url', label: m['sync.settings.custom.source.url']() },
+							{ id: 'title', label: m['sync.settings.custom.source.title']() },
+							{ id: 'selector', label: m['sync.settings.custom.source.selector']() }
 						],
 						active: draft.progressSource ?? 'url'
 					}}
@@ -566,19 +566,19 @@
 				{#if draft.progressSource === 'selector'}
 					<input
 						class={cn(field, 'bg-background font-mono text-xs')}
-						placeholder={m['sync.settings.custom.progress_selector']()}
+						placeholder={m['sync.settings.custom.progress.selector']()}
 						bind:value={draft.progressSelector}
 					/>
 				{/if}
 				{#if fromPage}
 					<input
 						class={cn(field, 'bg-background font-mono text-xs')}
-						placeholder={m['sync.settings.custom.progress_pattern']()}
-						aria-label={m['sync.settings.custom.progress_pattern']()}
+						placeholder={m['sync.settings.custom.progress.pattern']()}
+						aria-label={m['sync.settings.custom.progress.pattern']()}
 						bind:value={draft.progressPattern}
 					/>
 					<p class="px-1 text-xs text-muted-foreground">
-						{m['sync.settings.custom.progress_pattern_hint']()}
+						{m['sync.settings.custom.progress.patternHint']()}
 					</p>
 				{/if}
 
@@ -590,19 +590,19 @@
 					data-test-tab
 				>
 					<FlaskConicalIcon size={14} />
-					{m['sync.settings.custom.test_tab']()}
+					{m['sync.settings.custom.test.tab']()}
 				</button>
 
 				{#if testResult}
 					{#if testResult.status === 'no-tab'}
 						<p class="rounded-inner bg-warning-soft px-4 py-2.5 text-xs font-bold text-warning">
-							{m['sync.settings.custom.test_no_tab']()}
+							{m['sync.settings.custom.test.noTab']()}
 						</p>
 					{:else if testResult.status === 'error'}
 						<p
 							class="rounded-inner bg-destructive-soft px-4 py-2.5 text-xs font-bold text-destructive"
 						>
-							{m['sync.settings.custom.test_failed']({ message: testResult.message })}
+							{m['sync.settings.custom.test.failed']({ message: testResult.message })}
 						</p>
 					{:else}
 						<div
@@ -616,12 +616,12 @@
 								{testResult.url}
 							</span>
 							{#if !testResult.id}
-								<span>{m['sync.settings.custom.test_no_id']()}</span>
+								<span>{m['sync.settings.custom.test.noId']()}</span>
 							{:else if !testResult.progress}
-								<span>{m['sync.settings.custom.test_no_progress']()}</span>
+								<span>{m['sync.settings.custom.test.noProgress']()}</span>
 							{:else}
 								<span>
-									{m['sync.settings.custom.test_result']({
+									{m['sync.settings.custom.test.result']({
 										id: testResult.id,
 										progress: testResult.progress
 									})}
@@ -635,7 +635,7 @@
 								data-suggestion
 							>
 								<span class="min-w-0 flex-1">
-									{m['sync.settings.custom.suggestion']({
+									{m['sync.settings.custom.suggestion.label']({
 										text: suggestion.text,
 										progress: suggestion.progress
 									})}
@@ -645,7 +645,7 @@
 									class="h-8 flex-none cursor-pointer rounded-full bg-foreground px-4 text-xs font-black text-background"
 									onclick={() => useSuggestion(suggestion)}
 								>
-									{m['sync.settings.custom.suggestion_use']()}
+									{m['sync.settings.custom.suggestion.use']()}
 								</button>
 							</div>
 						{/if}
@@ -667,13 +667,13 @@
 				type="button"
 				class="flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-full text-xs font-bold text-muted-foreground hover:bg-surface hover:text-foreground"
 				onclick={openAdvanced}
-				title={m['sync.settings.custom.advanced_hint']()}
+				title={m['sync.settings.custom.advanced.hint']()}
 				data-advanced-toggle
 			>
 				<SlidersHorizontalIcon size={14} />
 				{advanced && page
 					? m['sync.settings.custom.basic']()
-					: m['sync.settings.custom.advanced']()}
+					: m['sync.settings.custom.advanced.label']()}
 			</button>
 		</div>
 	</div>

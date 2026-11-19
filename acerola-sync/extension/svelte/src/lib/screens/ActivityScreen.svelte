@@ -32,11 +32,11 @@
 	let fullEvery = $state(24);
 
 	const FULL_INTERVALS = [
-		{ id: '0', label: m['sync.activity.full_manual'] },
-		{ id: '6', label: m['sync.activity.full_6h'] },
-		{ id: '24', label: m['sync.activity.full_daily'] },
-		{ id: '72', label: m['sync.activity.full_3d'] },
-		{ id: '168', label: m['sync.activity.full_weekly'] }
+		{ id: '0', label: m['sync.activity.full.manual'] },
+		{ id: '6', label: m['sync.activity.full.everySixHours'] },
+		{ id: '24', label: m['sync.activity.full.daily'] },
+		{ id: '72', label: m['sync.activity.full.everyThreeDays'] },
+		{ id: '168', label: m['sync.activity.full.weekly'] }
 	];
 
 	async function saveFullInterval(id: string) {
@@ -44,7 +44,7 @@
 		fullEvery = Number(id);
 		try {
 			await app.api?.saveFullSyncInterval(fullEvery);
-			toast.success(m['sync.activity.full_saved']());
+			toast.success(m['sync.activity.full.saved']());
 		} catch (error) {
 			fullEvery = previous;
 			await app.handleError(error);
@@ -93,7 +93,7 @@
 
 	function addTime() {
 		if (!saoPauloToUtc(newTime)) {
-			toast.error(m['sync.activity.invalid_time']());
+			toast.error(m['sync.activity.invalidTime']());
 			return;
 		}
 		if (!scheduleTimes.includes(newTime)) scheduleTimes = [...scheduleTimes, newTime].sort();
@@ -105,13 +105,13 @@
 		if (newTimeTouched) addTime();
 		// Agenda ligada sem horário nunca roda: era assim que ela ficava "ligada" sem sync.
 		if (scheduleEnabled && scheduleTimes.length === 0) {
-			toast.error(m['sync.activity.schedule_needs_time']());
+			toast.error(m['sync.activity.schedule.needsTime']());
 			return;
 		}
 		try {
 			const utc = scheduleTimes.map((time) => saoPauloToUtc(time)).filter((t): t is string => !!t);
 			await app.api.saveSchedule(scheduleEnabled, utc);
-			toast.success(m['sync.activity.schedule_saved']());
+			toast.success(m['sync.activity.schedule.saved']());
 		} catch (error) {
 			await app.handleError(error);
 		}
@@ -119,13 +119,13 @@
 
 	function runLabel(run: SyncRun) {
 		return run.mode === 'FULL'
-			? m['sync.activity.mode_full']()
-			: m['sync.activity.mode_incremental']();
+			? m['sync.activity.mode.full']()
+			: m['sync.activity.mode.incremental']();
 	}
 
 	function sourceLabel(source: string) {
-		if (source === 'MANUAL') return m['sync.activity.source_manual']();
-		if (source.startsWith('custom:')) return m['sync.activity.source_custom']();
+		if (source === 'MANUAL') return m['sync.activity.source.manual']();
+		if (source.startsWith('custom:')) return m['sync.activity.source.custom']();
 		return source;
 	}
 
@@ -147,8 +147,8 @@
 	<AcerolaChipTabs
 		data={{
 			items: [
-				{ id: 'sync', label: m['sync.activity.tab_sync']() },
-				{ id: 'history', label: m['sync.activity.tab_history'](), count: history.length || null }
+				{ id: 'sync', label: m['sync.activity.tab.sync']() },
+				{ id: 'history', label: m['sync.activity.tab.history'](), count: history.length || null }
 			],
 			active: tab
 		}}
@@ -175,7 +175,7 @@
 							? m['sync.activity.running']()
 							: current?.status === 'FAILED'
 								? m['sync.activity.failed']()
-								: m['sync.activity.up_to_date']()}
+								: m['sync.activity.upToDate']()}
 					</p>
 					{#if current && !running}
 						<p class="mt-2 text-xs font-semibold opacity-80">
@@ -215,41 +215,41 @@
 					disabled={running}
 					onclick={() => startSync(false)}
 				>
-					{m['sync.activity.sync_now']()}
+					{m['sync.activity.syncNow']()}
 				</button>
 				<button
 					type="button"
 					class="h-11 cursor-pointer rounded-full bg-background/40 px-4 text-xs font-bold transition-transform active:scale-[0.98] disabled:cursor-wait disabled:opacity-60"
 					disabled={running}
 					onclick={() => startSync(true)}
-					title={m['sync.activity.full_hint']()}
+					title={m['sync.activity.full.hint']()}
 				>
-					{m['sync.activity.full']()}
+					{m['sync.activity.full.label']()}
 				</button>
 			</div>
 		</section>
 
 		<AcerolaSection
-			data={{ title: m['sync.activity.logs'](), hint: m['sync.activity.logs_hint']() }}
+			data={{ title: m['sync.activity.logs.label'](), hint: m['sync.activity.logs.hint']() }}
 		>
 			<AcerolaLogConsole
-				data={{ logs: watcher.logs, running: watcher.running, empty: m['sync.activity.no_logs']() }}
+				data={{ logs: watcher.logs, running: watcher.running, empty: m['sync.activity.noLogs']() }}
 			/>
 		</AcerolaSection>
 
 		{#if status?.pendingEntries}
 			<AcerolaStatTile
 				data={{
-					label: m['sync.activity.pending'](),
+					label: m['sync.activity.pending.label'](),
 					value: status.pendingEntries,
-					hint: m['sync.activity.pending_hint']()
+					hint: m['sync.activity.pending.hint']()
 				}}
 				ui={{ tone: 'warning' }}
 			/>
 		{/if}
 
 		<AcerolaSection
-			data={{ title: m['sync.activity.schedule'](), hint: m['sync.activity.schedule_hint']() }}
+			data={{ title: m['sync.activity.schedule.label'](), hint: m['sync.activity.schedule.hint']() }}
 		>
 			{#snippet actions()}
 				<AcerolaSwitch
@@ -275,12 +275,12 @@
 							</button>
 						</span>
 					{:else}
-						<span class="text-xs text-muted-foreground">{m['sync.activity.no_times']()}</span>
+						<span class="text-xs text-muted-foreground">{m['sync.activity.noTimes']()}</span>
 					{/each}
 				</div>
 				<div class="flex items-center gap-2">
 					<AcerolaTimePicker
-						data={{ value: newTime, label: m['sync.activity.new_time']() }}
+						data={{ value: newTime, label: m['sync.activity.newTime']() }}
 						events={{
 							onChange: (value) => {
 								newTime = value;
@@ -291,7 +291,7 @@
 					<button
 						type="button"
 						class="flex size-10 cursor-pointer items-center justify-center rounded-full bg-surface"
-						aria-label={m['sync.activity.add_time']()}
+						aria-label={m['sync.activity.addTime']()}
 						onclick={addTime}
 					>
 						<PlusIcon size={16} />
@@ -309,8 +309,8 @@
 
 		<AcerolaSection
 			data={{
-				title: m['sync.activity.full_interval'](),
-				hint: m['sync.activity.full_interval_hint']()
+				title: m['sync.activity.full.interval'](),
+				hint: m['sync.activity.full.intervalHint']()
 			}}
 		>
 			<AcerolaChipTabs
@@ -319,7 +319,7 @@
 					active: String(fullEvery)
 				}}
 				events={{ onSelect: saveFullInterval }}
-				ui={{ size: 'sm', label: m['sync.activity.full_interval']() }}
+				ui={{ size: 'sm', label: m['sync.activity.full.interval']() }}
 			/>
 		</AcerolaSection>
 
@@ -354,8 +354,8 @@
 	{:else if history.length === 0}
 		<AcerolaEmptyState
 			data={{
-				title: m['sync.activity.history_empty'](),
-				hint: m['sync.activity.history_hint'](),
+				title: m['sync.activity.history.empty'](),
+				hint: m['sync.activity.history.hint'](),
 				icon: HistoryIcon
 			}}
 		/>

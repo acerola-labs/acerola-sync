@@ -50,7 +50,7 @@ const TONE_VARS: Record<ToastTone, { bg: string; fg: string }> = {
 const STYLE = `
 	${paletteCss}
 	.dock { display: flex; flex-direction: column; align-items: flex-end; gap: 12px;
-		font-family: 'DM Sans Variable', system-ui, sans-serif; --from-y: 12px; --origin: bottom right; }
+		--font-sans: 'DM Sans Variable', system-ui, sans-serif; font-family: var(--font-sans); --from-y: 12px; --origin: bottom right; }
 	.stack { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; transition: opacity 180ms; }
 	.dock[data-x='left'], .dock[data-x='left'] .stack { align-items: flex-start; }
 	.dock[data-x='left'] { --origin: bottom left; }
@@ -327,7 +327,7 @@ export async function setFab(
 		makeDraggable(fab);
 	}
 	fab.querySelector('img')!.src = options.icon;
-	fab.title = `${options.label}\n${m['sync.tracking.fab_move']()}`;
+	fab.title = `${options.label}\n${m['sync.tracking.fab.move']()}`;
 	fab.setAttribute('aria-label', options.label);
 	const onClick = options.onClick;
 	// Ctrl + clique é do arrasto (e o clique logo depois de soltar também).

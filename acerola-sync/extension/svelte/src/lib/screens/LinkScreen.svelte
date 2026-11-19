@@ -58,7 +58,7 @@
 			>
 				{linked.media.titleUserPreferred}
 			</p>
-			<p class="text-xs font-semibold">{m['sync.link.reload_hint']()}</p>
+			<p class="text-xs font-semibold">{m['sync.link.reload.hint']()}</p>
 			<button
 				type="button"
 				class="mt-2 h-11 cursor-pointer rounded-full bg-foreground px-6 text-sm font-black text-background"

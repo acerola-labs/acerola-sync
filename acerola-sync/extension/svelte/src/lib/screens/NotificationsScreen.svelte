@@ -80,8 +80,8 @@
 	{:else if items.length === 0}
 		<AcerolaEmptyState
 			data={{
-				title: m['sync.notifications.empty'](),
-				hint: m['sync.notifications.empty_hint'](),
+				title: m['sync.notifications.empty.label'](),
+				hint: m['sync.notifications.empty.hint'](),
 				icon: BellIcon
 			}}
 		/>

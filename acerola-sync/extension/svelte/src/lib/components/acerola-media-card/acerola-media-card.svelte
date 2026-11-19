@@ -48,8 +48,8 @@
 	const percent = $derived(data.entry ? progressPercent(data.entry, data.media) : undefined);
 	const unit = $derived(
 		data.media.mediaType === 'ANIME'
-			? m['sync.card.episode_short']()
-			: m['sync.card.chapter_short']()
+			? m['sync.card.episode.short']()
+			: m['sync.card.chapter.short']()
 	);
 
 	// O número "pula" quando o progresso muda (depois do +1 salvar).

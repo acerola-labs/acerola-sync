@@ -94,8 +94,8 @@
 			data={{
 				items: [
 					{ id: 'ALL', label: m['sync.search.all']() },
-					{ id: 'ANIME', label: m['sync.media_type.anime']() },
-					{ id: 'MANGA', label: m['sync.media_type.manga']() }
+					{ id: 'ANIME', label: m['sync.media.type.anime']() },
+					{ id: 'MANGA', label: m['sync.media.type.manga']() }
 				],
 				active: type
 			}}
@@ -135,8 +135,8 @@
 	{:else if searched && !loading}
 		<AcerolaEmptyState
 			data={{
-				title: m['sync.search.empty'](),
-				hint: m['sync.search.empty_hint'](),
+				title: m['sync.search.empty.label'](),
+				hint: m['sync.search.empty.hint'](),
 				icon: SearchXIcon
 			}}
 		/>
