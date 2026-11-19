@@ -69,7 +69,7 @@ vi.mock('$lib/state/app.svelte', () => ({
 	}
 }));
 
-import SettingsScreen from './SettingsScreen.svelte';
+import SettingsScreen from './settings-screen.svelte';
 
 describe('SettingsScreen — sites personalizados', () => {
 	beforeEach(() => {

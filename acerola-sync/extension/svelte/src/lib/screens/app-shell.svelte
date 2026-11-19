@@ -17,14 +17,14 @@
 	import gsap from 'gsap';
 	import { onMount } from 'svelte';
 	import { storage } from 'wxt/utils/storage';
-	import ActivityScreen from './ActivityScreen.svelte';
-	import HomeScreen from './HomeScreen.svelte';
-	import LinkScreen from './LinkScreen.svelte';
-	import LoginScreen from './LoginScreen.svelte';
-	import MediaScreen from './MediaScreen.svelte';
-	import NotificationsScreen from './NotificationsScreen.svelte';
-	import SearchScreen from './SearchScreen.svelte';
-	import SettingsScreen from './SettingsScreen.svelte';
+	import ActivityScreen from './activity-screen.svelte';
+	import HomeScreen from './home-screen.svelte';
+	import LinkScreen from './link-screen.svelte';
+	import LoginScreen from './login-screen.svelte';
+	import MediaScreen from './media-screen.svelte';
+	import NotificationsScreen from './notifications-screen.svelte';
+	import SearchScreen from './search-screen.svelte';
+	import SettingsScreen from './settings-screen.svelte';
 
 	let { mode }: { mode: AppMode } = $props();
 

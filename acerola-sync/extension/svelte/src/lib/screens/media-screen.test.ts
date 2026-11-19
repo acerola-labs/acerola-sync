@@ -28,7 +28,7 @@ vi.mock('$lib/state/app.svelte', () => ({
 	}
 }));
 
-import MediaScreen from './MediaScreen.svelte';
+import MediaScreen from './media-screen.svelte';
 
 async function openWithEntry() {
 	api.media.mockResolvedValue({

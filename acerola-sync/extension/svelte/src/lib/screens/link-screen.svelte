@@ -7,7 +7,7 @@
 	import { revealIn } from '$lib/utils/motion.utils';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import { toast } from 'svelte-sonner';
-	import SearchScreen from './SearchScreen.svelte';
+	import SearchScreen from './search-screen.svelte';
 
 	let { request }: { request: LinkRequest } = $props();
 
