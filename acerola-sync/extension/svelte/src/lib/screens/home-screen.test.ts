@@ -88,7 +88,7 @@ describe('HomeScreen', () => {
 		expect(api.entryCounts).toHaveBeenLastCalledWith({ mediaType: 'ANIME', filters: drama });
 		await vi.waitFor(() => expect(document.querySelector('[data-spotlight]')).toBeNull());
 
-		// Gênero é do tipo: trocar para mangá limpa.
+		// Genre belongs to the type: switching to manga clears it.
 		await user.click(screen.getByRole('tab', { name: /^Manga|^Mangá/ }));
 		expect(api.entries).toHaveBeenLastCalledWith(
 			expect.objectContaining({

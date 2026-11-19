@@ -1,8 +1,8 @@
 import * as m from '$lib/paraglide/messages';
 import type { ErrorPayload } from '$lib/contracts/shared/shared.payloads';
 
-// Contrato entre os tipos de erro do Rust (ComicError) e as mensagens do Paraglide.
-// A chave é o valor exato do campo `errorType` vindo do payload do evento Tauri.
+// Contract between the Rust error types (ComicError) and the Paraglide messages.
+// The key is the exact value of the `errorType` field from the Tauri event payload.
 export const COMIC_ERROR_MESSAGES: Record<string, () => string> = {
 	AlreadyExists: m['tauriErrors.comic.alreadyExists.label'],
 	SyncInProgress: m['tauriErrors.comic.syncIn.progress.label'],
@@ -13,8 +13,8 @@ export const COMIC_ERROR_MESSAGES: Record<string, () => string> = {
 	Io: m['tauriErrors.comic.io.error.label']
 };
 
-// Resolve a mensagem traduzida a partir do payload de erro.
-// Usa o `message` técnico do Rust como fallback se o tipo não estiver mapeado.
+// Resolves the translated message from the error payload.
+// Falls back to Rust's technical `message` when the type is not mapped.
 export function resolveErrorMessage(payload: ErrorPayload): string {
 	return COMIC_ERROR_MESSAGES[payload.errorType]?.() ?? payload.message;
 }

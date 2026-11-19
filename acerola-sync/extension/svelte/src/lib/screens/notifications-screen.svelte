@@ -13,8 +13,8 @@
 	import { toast } from 'svelte-sonner';
 	import { storage } from 'wxt/utils/storage';
 
-	// Últimos avisos de episódio novo que o background mandou pelo sistema. Abrir a tela marca
-	// tudo como lido; o "Novo" continua na tela até sair dela.
+	// Latest new-episode notices the background sent through the system. Opening the screen
+	// marks everything as read; "New" stays on screen until you leave it.
 	let items = $state<NotificationItem[]>([]);
 	let loaded = $state(false);
 	const page = $derived(app.mode === 'page');

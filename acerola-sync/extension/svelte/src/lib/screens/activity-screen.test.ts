@@ -56,7 +56,7 @@ describe('ActivityScreen', () => {
 
 	it('mostra a agenda no horário de Brasília', async () => {
 		render(ActivityScreen);
-		// 12:00 UTC = 09:00 em Brasília.
+		// 12:00 UTC = 09:00 in Brasília.
 		expect(await screen.findByText('09:00')).toBeInTheDocument();
 		expect(screen.getByText('12:00 UTC')).toBeInTheDocument();
 	});
@@ -100,7 +100,7 @@ describe('ActivityScreen', () => {
 			[...hours.querySelectorAll('button')].find((b) => b.textContent?.trim() === '10')!
 		);
 		await user.click(screen.getByRole('button', { name: /^Save$|^Salvar$/ }));
-		// 10:00 em Brasília = 13:00 UTC.
+		// 10:00 in Brasília = 13:00 UTC.
 		expect(api.saveSchedule).toHaveBeenCalledWith(true, ['13:00:00']);
 	});
 

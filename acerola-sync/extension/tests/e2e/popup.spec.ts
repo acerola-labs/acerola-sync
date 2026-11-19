@@ -50,7 +50,7 @@ async function signIn(context: BrowserContext) {
 	);
 }
 
-/** Server falso: lista, contagens, +1 e um sync que termina na segunda consulta de logs. */
+/** Fake server: list, counts, +1 and a sync that finishes on the second log poll. */
 async function mockServer(page: Page, calls: { patched: unknown[]; synced: number }) {
 	let logPolls = 0;
 	await page.route(`${SERVER}/**`, async (route) => {
@@ -149,7 +149,7 @@ test('lista por status, destaque e +1', async ({ context, page, extensionId }) =
 	await page.goto(`chrome-extension://${extensionId}/popup.html`);
 
 	await expect(page.getByRole('tab', { name: /Completed|Completo/ })).toContainText('340');
-	// O primeiro da lista vira o destaque "Continuar"; o +1 dele manda progress + 1.
+	// The first in the list becomes the "Continue" highlight; its +1 sends progress + 1.
 	const spotlight = page.locator('[data-spotlight]');
 	await expect(spotlight).toContainText('Sousou no Frieren');
 
@@ -197,7 +197,7 @@ test('app.html?media= abre direto na obra, mesmo mangá com dados repetidos', as
 	await signIn(context);
 	const calls = { patched: [] as unknown[], synced: 0 };
 	await mockServer(page, calls);
-	// Mangá de formato MANGA, com relação repetida e link repetido: nada disso pode travar.
+	// A MANGA-format manga, with a repeated relation and a repeated link: none of it may break.
 	const relation = {
 		relationType: 'ADAPTATION',
 		id: 9,

@@ -31,14 +31,14 @@
 	type Screen = TopRoute | 'media' | 'link' | 'notifications';
 
 	let scroller = $state<HTMLElement>();
-	// Cada tela nova abre do topo. Sem isso, abrir uma obra com a lista rolada deixava a
-	// obra rolada também, e a linha de ações (voltar, sincronizar, AniList) ficava escondida.
+	// Every new screen opens at the top. Without this, opening a media with the list scrolled
+	// left the media scrolled too, and the action row (back, sync, AniList) was hidden.
 	$effect(() => {
 		void app.route;
 		if (scroller) scroller.scrollTop = 0;
 	});
 
-	/** Avisos ainda não vistos na tela de notificações (o ponto no sino). */
+	/** Notices not yet seen on the notifications screen (the dot on the bell). */
 	let unread = $state(0);
 	const countUnread = (items: NotificationItem[] | null) =>
 		(unread = (items ?? []).filter((item) => !item.read).length);
@@ -62,7 +62,7 @@
 
 	const page = $derived(mode === 'page');
 	const loggedIn = $derived(!!app.session && !!app.api);
-	// No modo página a obra abre num painel por cima da aba atual; no popup ela vira a tela.
+	// In page mode the media opens in a panel over the current tab; in the popup it becomes the screen.
 	const screen = $derived<Screen>(
 		page && app.route.name === 'media' ? app.underRoute : app.route.name
 	);
@@ -73,7 +73,7 @@
 		if (isTopRoute(id)) app.open(id);
 	}
 
-	/** Painel lateral entra deslizando da direita. */
+	/** Side panel slides in from the right. */
 	function slideIn(node: HTMLElement) {
 		if (prefersReducedMotion()) return;
 		gsap.fromTo(
@@ -201,7 +201,7 @@
 			</div>
 		{/if}
 
-		<!-- Espaço embaixo só quando a barra em pílula aparece (ela flutua por cima do conteúdo). -->
+		<!-- Bottom space only when the pill bar shows (it floats over the content). -->
 		<main
 			bind:this={scroller}
 			data-scroller

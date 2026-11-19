@@ -22,7 +22,7 @@ import type {
 	UserProfile
 } from './types';
 
-/** Erro do server no formato `{ errorType, message }`, ou de rede (`status` 0). */
+/** Server error shaped `{ errorType, message }`, or a network error (`status` 0). */
 export class ApiError extends Error {
 	constructor(
 		readonly status: number,
@@ -54,7 +54,7 @@ function withQuery(path: string, query?: Query): string {
 	return search ? `${path}?${search}` : path;
 }
 
-/** Filtros da lista na query string do server (listas separadas por vírgula). */
+/** List filters in the server query string (lists separated by commas). */
 export function filterQuery(filters: Partial<EntryFilters> = {}) {
 	const list = (items?: string[]) => (items?.length ? items.join(',') : undefined);
 	return {
@@ -68,8 +68,8 @@ export function filterQuery(filters: Partial<EntryFilters> = {}) {
 }
 
 /**
- * Cliente da API do server. Popup e background usam o mesmo cliente; o content script nunca
- * fala com o server direto (passa pelo background, que tem a host permission).
+ * Server API client. Popup and background share the same client; the content script never
+ * talks to the server directly (it goes through the background, which has the host permission).
  */
 export function createApi(serverUrl: string, sessionToken?: string | null, fetcher = fetch) {
 	const base = normalizeServerUrl(serverUrl);
@@ -107,7 +107,7 @@ export function createApi(serverUrl: string, sessionToken?: string | null, fetch
 
 	return {
 		health: () => request<{ status: string; version: string }>('GET', '/health'),
-		/** Client ID do AniList, vindo do `.env` do server. */
+		/** AniList Client ID, from the server `.env`. */
 		authConfig: () => request<{ anilistClientId: string }>('GET', '/auth/config'),
 
 		login: (accessToken: string, device: string) =>
@@ -130,7 +130,7 @@ export function createApi(serverUrl: string, sessionToken?: string | null, fetch
 				withQuery('/entries', { ...rest, ...filterQuery(filters) })
 			);
 		},
-		/** Contagem por status, com os mesmos filtros da lista. */
+		/** Count per status, with the same filters as the list. */
 		entryCounts: (query: { mediaType?: MediaType; filters?: Partial<EntryFilters> } = {}) =>
 			request<EntryCount[]>(
 				'GET',
@@ -144,14 +144,14 @@ export function createApi(serverUrl: string, sessionToken?: string | null, fetch
 		updateEntry: (mediaId: number, patch: EntryPatch) =>
 			request<SavedEntry>('PATCH', `/entries/${mediaId}`, patch),
 		deleteEntry: (mediaId: number) => request<void>('DELETE', `/entries/${mediaId}`),
-		/** Manda a pendência da obra e puxa de novo a obra e a entrada do AniList. */
+		/** Sends the media's pending change and pulls the media and the AniList entry again. */
 		syncEntry: (mediaId: number) => request<MediaDetail>('POST', `/entries/${mediaId}/sync`),
 
 		search: (q: string, mediaType?: MediaType, remote = false) =>
 			request<SearchHit[]>('GET', withQuery('/media/search', { q, mediaType, remote })),
 		media: (mediaId: number) => request<MediaDetail>('GET', `/media/${mediaId}`),
 
-		/** Começa o sync e volta na hora; o andamento vem por `syncLogs`. */
+		/** Starts the sync and returns right away; progress comes through `syncLogs`. */
 		sync: (full = false) => request<SyncRun>('POST', withQuery('/sync', { full: full || null })),
 		syncLogs: (runId: number, after = 0) =>
 			request<SyncLogs>('GET', withQuery(`/sync/runs/${runId}/logs`, { after })),

@@ -1,7 +1,7 @@
 import type { EntryStatus, MediaType } from '$lib/api/types';
 import { m } from '$lib/paraglide/messages';
 
-/** Nome do status no idioma da tela; "assistindo" ou "lendo" conforme o tipo. */
+/** Status name in the screen language; "watching" or "reading" depending on the type. */
 export function statusLabel(status: EntryStatus, mediaType: MediaType): string {
 	const anime = mediaType === 'ANIME';
 	switch (status) {
@@ -68,7 +68,7 @@ const RELATION_LABELS: Record<string, () => string> = {
 	OTHER: m['sync.media.relation.other']
 };
 
-/** `LIGHT_NOVEL` → `Light novel`: para valores do AniList sem tradução. */
+/** `LIGHT_NOVEL` → `Light novel`: for AniList values with no translation. */
 export function humanizeEnum(value: string): string {
 	const text = value.replace(/_/g, ' ').toLowerCase();
 	return text.charAt(0).toUpperCase() + text.slice(1);
