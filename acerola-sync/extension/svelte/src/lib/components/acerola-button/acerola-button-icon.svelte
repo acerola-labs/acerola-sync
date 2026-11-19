@@ -53,7 +53,7 @@
 
 <Button
 	class={cn(
-		'size-10 rounded-xl p-0 enabled:cursor-pointer disabled:pointer-events-auto disabled:cursor-not-allowed',
+		'size-10 rounded-inner p-0 enabled:cursor-pointer disabled:pointer-events-auto disabled:cursor-not-allowed',
 		ui?.tone && TONE_CLASS[ui.tone],
 		ui?.class
 	)}
