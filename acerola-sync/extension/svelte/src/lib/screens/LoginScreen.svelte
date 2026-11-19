@@ -36,16 +36,16 @@
 	async function testServer() {
 		try {
 			const health = await createApi(normalizeServerUrl(serverUrl)).health();
-			toast.success(m['sync.login.server_ok']({ version: health.version }));
+			toast.success(m['sync.login.server.ok']({ version: health.version }));
 		} catch {
-			toast.error(m['sync.errors.server_offline']());
+			toast.error(m['sync.errors.serverOffline']());
 		}
 	}
 
 	async function login() {
 		const url = normalizeServerUrl(serverUrl);
 		if (!url) {
-			toast.error(m['sync.login.missing_fields']());
+			toast.error(m['sync.login.missingFields']());
 			return;
 		}
 
@@ -92,7 +92,7 @@
 				spellcheck="false"
 				oninput={rememberServer}
 				placeholder="https://sync.acerola.app"
-				aria-label={m['sync.login.server_url']()}
+				aria-label={m['sync.login.server.url']()}
 				bind:value={serverUrl}
 			/>
 			<button
@@ -118,7 +118,7 @@
 		use:revealIn={{ delay: 0.16 }}
 		class="rounded-tile bg-card p-4 text-xs text-muted-foreground"
 	>
-		<p>{m['sync.login.redirect_hint']()}</p>
+		<p>{m['sync.login.redirect.hint']()}</p>
 		<button
 			type="button"
 			class="mt-2 flex w-full cursor-pointer items-center gap-2 rounded-full bg-surface px-4 py-2 text-left font-mono text-foreground"

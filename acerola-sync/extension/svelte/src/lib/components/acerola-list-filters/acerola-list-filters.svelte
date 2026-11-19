@@ -64,12 +64,12 @@
 	onDestroy(() => clearTimeout(timer));
 
 	const SORTS: { id: EntrySort; label: () => string }[] = [
-		{ id: 'updated', label: m['sync.filters.sort_updated'] },
-		{ id: 'title', label: m['sync.filters.sort_title'] },
-		{ id: 'score', label: m['sync.filters.sort_score'] },
-		{ id: 'progress', label: m['sync.filters.sort_progress'] },
-		{ id: 'average', label: m['sync.filters.sort_average'] },
-		{ id: 'year', label: m['sync.filters.sort_year'] }
+		{ id: 'updated', label: m['sync.filters.sort.updated'] },
+		{ id: 'title', label: m['sync.filters.sort.title'] },
+		{ id: 'score', label: m['sync.filters.sort.score'] },
+		{ id: 'progress', label: m['sync.filters.sort.progress'] },
+		{ id: 'average', label: m['sync.filters.sort.average'] },
+		{ id: 'year', label: m['sync.filters.sort.year'] }
 	];
 
 	const MEDIA_STATUSES = ['RELEASING', 'FINISHED', 'NOT_YET_RELEASED', 'HIATUS', 'CANCELLED'];
@@ -160,7 +160,7 @@
 			data-filters-panel
 		>
 			<div class="flex flex-col gap-2">
-				{@render group(m['sync.filters.sort']())}
+				{@render group(m['sync.filters.sort.label']())}
 				<div class="flex flex-wrap gap-1.5">
 					{#each SORTS as sort (sort.id)}
 						{@render chip(sort.label(), data.value.sort === sort.id, () =>
@@ -171,7 +171,7 @@
 			</div>
 
 			<div class="flex flex-col gap-2">
-				{@render group(m['sync.filters.media_status']())}
+				{@render group(m['sync.filters.mediaStatus']())}
 				<div class="flex flex-wrap gap-1.5">
 					{#each MEDIA_STATUSES as status (status)}
 						{@render chip(mediaStatusLabel(status), data.value.mediaStatuses.includes(status), () =>
@@ -183,7 +183,7 @@
 
 			{#if data.facets?.formats.length}
 				<div class="flex flex-col gap-2">
-					{@render group(m['sync.filters.format']())}
+					{@render group(m['sync.filters.format.label']())}
 					<div class="flex flex-wrap gap-1.5">
 						{#each data.facets.formats as format (format)}
 							{@render chip(formatLabel(format), data.value.formats.includes(format), () =>

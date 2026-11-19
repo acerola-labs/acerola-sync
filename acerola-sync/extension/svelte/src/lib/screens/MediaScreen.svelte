@@ -100,28 +100,28 @@
 	const info = $derived.by(() => {
 		if (!media) return [];
 		const rows: [string, string | null | undefined][] = [
-			[m['sync.media.info_format'](), media.format && formatLabel(media.format)],
+			[m['sync.media.info.format'](), media.format && formatLabel(media.format)],
 			[
 				media.mediaType === 'ANIME'
-					? m['sync.media.episodes_label']()
-					: m['sync.media.chapters_label'](),
+					? m['sync.media.episodes.label']()
+					: m['sync.media.chapters.label'](),
 				total ? String(total) : null
 			],
-			[m['sync.media.info_volumes'](), media.volumes ? String(media.volumes) : null],
+			[m['sync.media.info.volumes'](), media.volumes ? String(media.volumes) : null],
 			[
-				m['sync.media.info_duration'](),
-				media.duration ? m['sync.media.duration_value']({ minutes: media.duration }) : null
+				m['sync.media.info.duration'](),
+				media.duration ? m['sync.media.duration.value']({ minutes: media.duration }) : null
 			],
-			[m['sync.media.info_status'](), media.status && mediaStatusLabel(media.status)],
-			[m['sync.media.info_start'](), formatDate(media.startDate)],
-			[m['sync.media.info_end'](), formatDate(media.endDate)],
+			[m['sync.media.info.status'](), media.status && mediaStatusLabel(media.status)],
+			[m['sync.media.info.start'](), formatDate(media.startDate)],
+			[m['sync.media.info.end'](), formatDate(media.endDate)],
 			[
-				m['sync.media.info_season'](),
+				m['sync.media.info.season'](),
 				media.season ? `${seasonLabel(media.season)} ${media.seasonYear ?? ''}`.trim() : null
 			],
-			[m['sync.media.info_studios'](), media.studios?.join(', ')],
-			[m['sync.media.info_source'](), media.source && humanizeEnum(media.source)],
-			[m['sync.media.info_synonyms'](), media.synonyms.slice(0, 3).join(' · ')]
+			[m['sync.media.info.studios'](), media.studios?.join(', ')],
+			[m['sync.media.info.source'](), media.source && humanizeEnum(media.source)],
+			[m['sync.media.info.synonyms'](), media.synonyms.slice(0, 3).join(' · ')]
 		];
 		return rows.filter((row): row is [string, string] => !!row[1]);
 	});
@@ -160,7 +160,7 @@
 			media = detail.media;
 			visits = detail.visits ?? [];
 			fill(detail.entry);
-			if (detail.entry?.dirty) toast.warning(m['sync.home.saved_pending']());
+			if (detail.entry?.dirty) toast.warning(m['sync.home.savedPending']());
 			else toast.success(m['sync.media.synced']());
 		} catch (error) {
 			await app.handleError(error);
@@ -182,7 +182,7 @@
 		try {
 			const saved = await app.api.updateEntry(mediaId, { status, progress, score });
 			fill(saved);
-			if (saved.pending) toast.warning(m['sync.home.saved_pending']());
+			if (saved.pending) toast.warning(m['sync.home.savedPending']());
 			else toast.success(m['sync.media.saved']());
 		} catch (error) {
 			await app.handleError(error);
@@ -317,8 +317,8 @@
 				data={{
 					label:
 						media.mediaType === 'ANIME'
-							? m['sync.media.episodes_label']()
-							: m['sync.media.chapters_label'](),
+							? m['sync.media.episodes.label']()
+							: m['sync.media.chapters.label'](),
 					value: total ?? '?'
 				}}
 				ui={{ tone: 'info' }}
@@ -326,14 +326,14 @@
 			{#if media.nextAiringEpisode && countdown(media.nextAiringAt)}
 				<AcerolaStatTile
 					data={{
-						label: m['sync.media.next_label']({ episode: media.nextAiringEpisode }),
+						label: m['sync.media.next.label']({ episode: media.nextAiringEpisode }),
 						value: countdown(media.nextAiringAt) ?? ''
 					}}
 					ui={{ tone: 'success' }}
 				/>
 			{:else}
 				<AcerolaStatTile
-					data={{ label: m['sync.media.score_label'](), value: entry?.score || '—' }}
+					data={{ label: m['sync.media.yourScore'](), value: entry?.score || '—' }}
 					ui={{ tone: 'success' }}
 				/>
 			{/if}
@@ -341,7 +341,7 @@
 
 		<section class="flex flex-col gap-3 rounded-card bg-card p-4">
 			<div class="flex items-center justify-between">
-				<h2 class="text-lg font-black tracking-tight">{m['sync.media.your_list']()}</h2>
+				<h2 class="text-lg font-black tracking-tight">{m['sync.media.yourList']()}</h2>
 				{#if entry?.dirty}
 					<span
 						class="flex items-center gap-1 rounded-full bg-warning-soft px-2.5 py-1 text-[11px] font-bold text-warning"
@@ -365,17 +365,17 @@
 					max: total,
 					caption: total
 						? aired
-							? m['sync.media.of_total_aired']({ total, aired })
-							: m['sync.media.of_total']({ total })
+							? m['sync.media.ofTotalAired']({ total, aired })
+							: m['sync.media.ofTotal']({ total })
 						: media.mediaType === 'ANIME'
-							? m['sync.media.episodes_label']()
-							: m['sync.media.chapters_label']()
+							? m['sync.media.episodes.label']()
+							: m['sync.media.chapters.label']()
 				}}
 				events={{ onChange: changeProgress }}
 			/>
 
 			<label class="flex items-center justify-between gap-3 rounded-tile bg-surface px-4 py-2.5">
-				<span class="text-sm font-bold">{m['sync.media.score']()}</span>
+				<span class="text-sm font-bold">{m['sync.media.score.label']()}</span>
 				<input
 					type="range"
 					min="0"
@@ -383,7 +383,7 @@
 					step="5"
 					bind:value={score}
 					class="flex-1 accent-primary"
-					aria-label={m['sync.media.score']()}
+					aria-label={m['sync.media.score.label']()}
 				/>
 				<span class="w-8 text-right text-sm font-black tabular-nums">{score}</span>
 			</label>
@@ -402,7 +402,7 @@
 					class="cursor-pointer text-xs font-bold text-destructive hover:underline"
 					onclick={() => (confirmRemove = { open: true })}
 				>
-					{m['sync.media.remove']()}
+					{m['sync.media.remove.label']()}
 				</button>
 			{/if}
 		</section>
@@ -411,8 +411,8 @@
 			<section class="flex flex-col gap-3" data-watch-links>
 				<h2 class="text-lg font-black tracking-tight">
 					{media.mediaType === 'ANIME'
-						? m['sync.media.watch_anime']()
-						: m['sync.media.watch_manga']()}
+						? m['sync.media.watch.anime']()
+						: m['sync.media.watch.manga']()}
 				</h2>
 				<div class="flex flex-col gap-2" use:staggerIn>
 					{#each links as link (link.key)}
@@ -430,11 +430,11 @@
 								<span class="truncate text-sm font-black">{link.name}</span>
 								<span class="truncate text-xs text-muted-foreground">
 									{#if link.kind === 'continue' && link.progress}
-										{m['sync.media.continue_at']({ unit: unit(link.progress) })}
+										{m['sync.media.continueAt']({ unit: unit(link.progress) })}
 									{:else if link.kind === 'streaming'}
 										{m['sync.media.official']()}
 									{:else}
-										{m['sync.media.search_on']()}
+										{m['sync.media.searchOn']()}
 									{/if}
 								</span>
 							</span>
@@ -471,7 +471,7 @@
 
 		{#if info.length}
 			<section class="flex flex-col gap-3 rounded-card bg-card p-4" data-media-info>
-				<h2 class="text-lg font-black tracking-tight">{m['sync.media.info']()}</h2>
+				<h2 class="text-lg font-black tracking-tight">{m['sync.media.info.label']()}</h2>
 				<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
 					{#each info as [label, value] (label)}
 						<dt class="font-bold text-muted-foreground">{label}</dt>
@@ -562,10 +562,10 @@
 <AcerolaConfirmDialog
 	bind:state={confirmRemove}
 	data={{
-		title: m['sync.media.remove_title'](),
-		description: m['sync.media.remove_description'](),
+		title: m['sync.media.remove.title'](),
+		description: m['sync.media.remove.description'](),
 		cancelText: m['sync.common.cancel'](),
-		actionText: m['sync.media.remove'](),
+		actionText: m['sync.media.remove.label'](),
 		icon: TrashIcon
 	}}
 	events={{ onAction: remove }}

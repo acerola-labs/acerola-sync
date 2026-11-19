@@ -192,10 +192,10 @@
 						type="button"
 						class="flex h-8 cursor-pointer items-center gap-1.5 rounded-full bg-surface px-3 text-[11px] font-bold text-muted-foreground transition-colors hover:text-foreground"
 						onclick={() => app.openFullPage()}
-						title={m['sync.nav.open_page']()}
+						title={m['sync.nav.openPage']()}
 					>
 						<ExpandIcon size={13} />
-						{m['sync.nav.open_page']()}
+						{m['sync.nav.openPage']()}
 					</button>
 				</div>
 			</div>

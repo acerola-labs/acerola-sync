@@ -88,8 +88,8 @@ async function track(page: DetectedPage, resolved: Resolved) {
 	showToast({
 		title: resolved.media.titleUserPreferred,
 		message: result.saved?.pending
-			? m['sync.tracking.saved_pending']({ unit: unitLabel(saved) })
-			: m['sync.tracking.saved']({ unit: unitLabel(saved) }),
+			? m['sync.tracking.saved.pending']({ unit: unitLabel(saved) })
+			: m['sync.tracking.saved.label']({ unit: unitLabel(saved) }),
 		tone: result.saved?.pending ? 'warning' : 'success',
 		cover: resolved.media.coverUrl
 	});
@@ -104,9 +104,9 @@ async function handlePage(adapter: SiteAdapter, isCurrent: () => boolean): Promi
 
 	if (response.status === 'unresolved') {
 		showToast({
-			title: m['sync.tracking.not_found']({ title: page.title }),
+			title: m['sync.tracking.notFound']({ title: page.title }),
 			tone: 'warning',
-			actions: [{ label: m['sync.tracking.link_action'](), onClick: () => openLink(page) }]
+			actions: [{ label: m['sync.tracking.linkAction'](), onClick: () => openLink(page) }]
 		});
 		return;
 	}
@@ -128,7 +128,7 @@ async function handlePage(adapter: SiteAdapter, isCurrent: () => boolean): Promi
 		message: m['sync.tracking.detected']({ unit: unitLabel(page) }),
 		cover: resolved.media.coverUrl,
 		actions: [
-			{ label: m['sync.tracking.wrong_media'](), onClick: () => openLink(page), secondary: true }
+			{ label: m['sync.tracking.wrongMedia'](), onClick: () => openLink(page), secondary: true }
 		],
 		durationMs: DETECTED_TOAST_MS
 	});
@@ -160,9 +160,9 @@ export async function describePage(page: CurrentPage): Promise<ToastOptions | nu
 	const response = await sendMessage({ type: 'track:resolve', page: linkPage });
 	if (response.status === 'unresolved') {
 		return {
-			title: m['sync.tracking.not_found']({ title: page.title }),
+			title: m['sync.tracking.notFound']({ title: page.title }),
 			tone: 'warning',
-			actions: [{ label: m['sync.tracking.link_action'](), onClick: () => openLink(linkPage) }]
+			actions: [{ label: m['sync.tracking.linkAction'](), onClick: () => openLink(linkPage) }]
 		};
 	}
 	if (response.status === 'error') {
@@ -178,14 +178,14 @@ export async function describePage(page: CurrentPage): Promise<ToastOptions | nu
 	return {
 		title: media.titleUserPreferred,
 		message: entry
-			? m['sync.tracking.in_list']({ unit: unit(entry.progress) })
-			: m['sync.tracking.not_in_list'](),
+			? m['sync.tracking.inList']({ unit: unit(entry.progress) })
+			: m['sync.tracking.notInList'](),
 		tone: entry ? 'success' : 'info',
 		cover: media.coverUrl,
 		actions: [
-			{ label: m['sync.tracking.open_app'](), onClick: () => openMedia(media.id) },
+			{ label: m['sync.tracking.openApp'](), onClick: () => openMedia(media.id) },
 			{
-				label: m['sync.tracking.wrong_media'](),
+				label: m['sync.tracking.wrongMedia'](),
 				onClick: () => openLink(linkPage),
 				secondary: true
 			}
@@ -207,7 +207,7 @@ async function toggleHereCard(adapter: SiteAdapter) {
 	const page = await currentPage(adapter);
 	const card = page
 		? await describePage(page)
-		: ({ title: m['sync.tracking.nothing_here'](), tone: 'info' } satisfies ToastOptions);
+		: ({ title: m['sync.tracking.nothingHere'](), tone: 'info' } satisfies ToastOptions);
 	if (card) void showToast({ ...card, id: HERE_TOAST_ID, durationMs: null });
 }
 
@@ -227,7 +227,7 @@ async function refreshFab(adapter: SiteAdapter, retry = true) {
 	if (isCustomSite(adapter)) {
 		await setFab({
 			icon: FAB_ICON,
-			label: m['sync.tracking.fab_open'](),
+			label: m['sync.tracking.fab.open'](),
 			onClick: () => void sendMessage({ type: 'open:popup' })
 		});
 		return;
@@ -244,7 +244,7 @@ async function refreshFab(adapter: SiteAdapter, retry = true) {
 		hasWork
 			? {
 					icon: FAB_ICON,
-					label: m['sync.tracking.fab'](),
+					label: m['sync.tracking.fab.label'](),
 					onClick: () => void toggleHereCard(adapter)
 				}
 			: null

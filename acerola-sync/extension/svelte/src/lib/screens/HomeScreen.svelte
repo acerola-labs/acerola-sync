@@ -205,7 +205,7 @@
 		busyIds = [...busyIds, entry.mediaId];
 		try {
 			const saved = await app.api.updateEntry(entry.mediaId, { progress: entry.progress + 1 });
-			if (saved.pending) toast.warning(m['sync.home.saved_pending']());
+			if (saved.pending) toast.warning(m['sync.home.savedPending']());
 			if (saved.status === status) {
 				entries = entries.map((item) => (item.mediaId === saved.mediaId ? saved : item));
 			} else {
@@ -224,10 +224,10 @@
 		const total = totalUnits(entry.media);
 		const base =
 			entry.media.mediaType === 'ANIME'
-				? m['sync.home.caption_episode']({ progress: entry.progress, total: total ?? '?' })
-				: m['sync.home.caption_chapter']({ progress: entry.progress, total: total ?? '?' });
+				? m['sync.home.caption.episode']({ progress: entry.progress, total: total ?? '?' })
+				: m['sync.home.caption.chapter']({ progress: entry.progress, total: total ?? '?' });
 		const aired = airedCount(entry.media);
-		return aired ? m['sync.home.caption_aired']({ caption: base, aired }) : base;
+		return aired ? m['sync.home.caption.aired']({ caption: base, aired }) : base;
 	}
 
 	function subtitle(entry: EntryWithMedia) {
@@ -238,7 +238,7 @@
 	function badge(entry: EntryWithMedia) {
 		const left = countdown(entry.media.nextAiringAt);
 		return left && entry.media.nextAiringEpisode
-			? m['sync.home.airing_badge']({ episode: entry.media.nextAiringEpisode, time: left })
+			? m['sync.home.airing.badge']({ episode: entry.media.nextAiringEpisode, time: left })
 			: null;
 	}
 
@@ -259,7 +259,7 @@
 		<div
 			class="isolate flex items-baseline gap-4 self-start pb-2.5"
 			role="tablist"
-			aria-label={m['sync.home.type_label']()}
+			aria-label={m['sync.home.type.label']()}
 			use:slidingIndicator={{
 				selector: '[aria-selected="true"]',
 				indicatorClass: 'top-auto bottom-0 h-1.5 rounded-full bg-primary',
@@ -278,7 +278,7 @@
 						? 'text-foreground'
 						: 'text-muted-foreground/40 hover:text-muted-foreground/80'}"
 				>
-					{type === 'ANIME' ? m['sync.media_type.anime']() : m['sync.media_type.manga']()}
+					{type === 'ANIME' ? m['sync.media.type.anime']() : m['sync.media.type.manga']()}
 				</button>
 			{/each}
 		</div>
@@ -306,7 +306,7 @@
 			/>
 			<AcerolaStatTile
 				data={{
-					label: m['sync.home.on_hold'](),
+					label: m['sync.home.onHold'](),
 					value: countOf(mediaType, 'PAUSED') + countOf(mediaType, 'DROPPED')
 				}}
 				ui={{ tone: 'warning' }}
@@ -317,7 +317,7 @@
 	<AcerolaChipTabs
 		data={{ items: tabs, active: status }}
 		events={{ onSelect: selectStatus }}
-		ui={{ label: m['sync.home.status_label']() }}
+		ui={{ label: m['sync.home.status.label']() }}
 	/>
 
 	<AcerolaListFilters data={{ value: filters, facets }} events={{ onChange: changeFilters }} />
@@ -327,7 +327,7 @@
 			<AcerolaSpotlight
 				data={{
 					entry: hereEntry,
-					eyebrow: m['sync.home.here']({ site: hereSite }),
+					eyebrow: m['sync.home.here.label']({ site: hereSite }),
 					caption: caption(hereEntry)
 				}}
 				events={{
@@ -347,13 +347,13 @@
 				{/if}
 				<div class="flex min-w-0 flex-1 flex-col gap-1">
 					<span class="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
-						{m['sync.home.here']({ site: hereSite })}
+						{m['sync.home.here.label']({ site: hereSite })}
 					</span>
 					<p class="line-clamp-2 text-lg leading-tight font-black tracking-tight">
 						{here.resolved?.media.titleUserPreferred ?? here.page.title}
 					</p>
 					<p class="text-xs text-muted-foreground">
-						{here.resolved ? m['sync.home.here_not_listed']() : m['sync.home.here_not_found']()}
+						{here.resolved ? m['sync.home.here.notListed']() : m['sync.home.here.notFound']()}
 					</p>
 				</div>
 				{#if here.resolved}
@@ -363,7 +363,7 @@
 						onclick={() =>
 							here.resolved && app.push({ name: 'media', mediaId: here.resolved.media.id })}
 					>
-						{m['sync.home.here_open']()}
+						{m['sync.home.here.open']()}
 					</button>
 				{:else}
 					<button
@@ -381,7 +381,7 @@
 							})}
 					>
 						<LinkIcon size={14} />
-						{m['sync.home.here_link']()}
+						{m['sync.home.here.link']()}
 					</button>
 				{/if}
 			</section>
@@ -404,8 +404,8 @@
 			data={{
 				title: filtering
 					? m['sync.filters.empty']()
-					: m['sync.home.empty']({ status: statusLabel(status, mediaType).toLowerCase() }),
-				hint: m['sync.home.empty_hint'](),
+					: m['sync.home.empty.label']({ status: statusLabel(status, mediaType).toLowerCase() }),
+				hint: m['sync.home.empty.hint'](),
 				icon: InboxIcon
 			}}
 		/>

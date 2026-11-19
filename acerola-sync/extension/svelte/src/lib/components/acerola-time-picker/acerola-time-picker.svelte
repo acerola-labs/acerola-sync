@@ -144,18 +144,18 @@
 			class="z-50 flex w-60 flex-col gap-3 rounded-card bg-card p-3 text-foreground shadow-float outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95"
 		>
 			<div class="flex gap-2">
-				{@render column(m['sync.time_picker.hour'](), hours, current.hour, (hour) =>
+				{@render column(m['sync.timePicker.hour'](), hours, current.hour, (hour) =>
 					pick({ hour })
 				)}
 				<span class="self-center pt-5 text-xl font-black text-muted-foreground">:</span>
-				{@render column(m['sync.time_picker.minute'](), minutes, current.minute, (minute) =>
+				{@render column(m['sync.timePicker.minute'](), minutes, current.minute, (minute) =>
 					pick({ minute })
 				)}
 			</div>
 			<Popover.Close
 				class="h-10 cursor-pointer rounded-full bg-foreground text-sm font-black text-background transition-transform active:scale-[0.98]"
 			>
-				{m['sync.time_picker.done']()}
+				{m['sync.timePicker.done']()}
 			</Popover.Close>
 		</Popover.Content>
 	</Popover.Portal>
