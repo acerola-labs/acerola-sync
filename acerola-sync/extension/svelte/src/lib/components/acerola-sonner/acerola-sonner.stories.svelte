@@ -34,14 +34,14 @@
 		<AcerolaSonner />
 		<button
 			type="button"
-			class="rounded bg-primary px-4 py-2 text-primary-foreground"
+			class="rounded-full bg-primary px-4 py-2 text-primary-foreground"
 			onclick={() => toast.success('Toast disparado!')}
 		>
 			Disparar Toast
 		</button>
 		<button
 			type="button"
-			class="rounded bg-secondary px-4 py-2 text-secondary-foreground"
+			class="rounded-full bg-secondary px-4 py-2 text-secondary-foreground"
 			onclick={() =>
 				toastAsync(fakeInstantAction, {
 					loading: 'Processando...',
@@ -53,7 +53,7 @@
 		</button>
 		<button
 			type="button"
-			class="rounded bg-destructive px-4 py-2 text-white"
+			class="rounded-full bg-destructive px-4 py-2 text-destructive-foreground"
 			onclick={() =>
 				toastAsync(fakeFailingAction, {
 					loading: 'Processando...',
