@@ -40,7 +40,7 @@ vi.mock('$lib/state/app.svelte', () => ({
 	}
 }));
 
-import ActivityScreen from './ActivityScreen.svelte';
+import ActivityScreen from './activity-screen.svelte';
 
 describe('ActivityScreen', () => {
 	beforeEach(() => {

@@ -18,7 +18,7 @@ vi.mock('$lib/state/app.svelte', () => ({
 	app: { mode: 'popup', push: (...args: unknown[]) => push(...args), back: vi.fn() }
 }));
 
-import NotificationsScreen from './NotificationsScreen.svelte';
+import NotificationsScreen from './notifications-screen.svelte';
 
 function item(mediaId: number, episode: number, read: boolean): NotificationItem {
 	return {

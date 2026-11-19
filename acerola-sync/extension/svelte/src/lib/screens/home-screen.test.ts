@@ -24,7 +24,7 @@ vi.mock('$lib/state/app.svelte', () => ({
 	}
 }));
 
-import HomeScreen from './HomeScreen.svelte';
+import HomeScreen from './home-screen.svelte';
 
 describe('HomeScreen', () => {
 	beforeEach(() => {
