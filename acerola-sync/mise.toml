@@ -28,17 +28,3 @@ EXTENSION_PUBLIC_KEY="$KEY" npm run build
 [tasks.build]
 description = "Server + extensão"
 depends = ["build:server", "build:extension"]
-
-# Deploy do server com o Ansible (server/.config/ansible/deploy.yml). Servidor e domínio vêm do
-# `server/.config/ansible/hosts.ini` (copie do hosts.example.ini); os segredos, do ambiente: DATABASE_URL,
-# ENCRYPTION_KEY, ANILIST_CLIENT_ID e, opcional, ALLOWED_ANILIST_USER_ID.
-[tasks.deploy]
-description = "Deploy do server no VPS via Ansible"
-dir = "{{config_root}}"
-run = """
-ansible-playbook -i server/.config/ansible/hosts.ini server/.config/ansible/deploy.yml \
-  -e "database_url=$DATABASE_URL" \
-  -e "encryption_key=$ENCRYPTION_KEY" \
-  -e "anilist_client_id=$ANILIST_CLIENT_ID" \
-  -e "allowed_anilist_user_id=${ALLOWED_ANILIST_USER_ID:-}"
-"""
