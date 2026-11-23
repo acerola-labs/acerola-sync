@@ -5,8 +5,8 @@
 #   Repo       clone of main on the hetzner server; Build and Stack read from it.
 #   Build      acerola-sync/server/.config/docker/dockerfile built ON the hetzner server itself.
 #              No registry: the image stays local as acerola-sync:<short commit>-hetzner.
-#   Stack      .komodo/compose.yml on the hetzner Swarm; komodo.sh runs the deploy steps and
-#              route.sh publishes api.sync.acerola.app on the server's Caddy (edge network).
+#   Stack      .komodo/acerola-sync.compose.yml on the hetzner Swarm; komodo.sh runs the deploy steps
+#              and route.sh publishes acerola-sync.caddy (api.sync.acerola.app) on the server's Caddy.
 #   Procedure  Pull -> Build -> Deploy, triggered by the GitHub webhook
 #              (/listener/github/procedure/hetzner_acerola-sync/main).
 #   Action     native Swarm rollback to the previous version.
@@ -68,7 +68,7 @@ project_name = "hetzner_acerola-sync"
 linked_repo = "hetzner_acerola-sync"
 webhook_enabled = false
 run_directory = ".komodo"
-file_paths = ["compose.yml"]
+file_paths = ["acerola-sync.compose.yml"]
 extra_args = ["--resolve-image", "never", "--detach=false"]
 links = ["https://api.sync.acerola.app"]
 pre_deploy.command = "sh komodo.sh pre-deploy acerola-sync hetzner"
