@@ -1,0 +1,60 @@
+# Acerola Sync server on the hetzner Swarm (Komodo Stack hetzner_sync, see komodo.toml).
+# APP_IMAGE comes from komodo.sh: the image the Komodo Build left on this same server.
+# The variables come from the Stack's compose_cmd_wrapper (Komodo Variables), never from a .env.
+# Caddy (config) reaches the service as hetzner_sync_server:3010 over the edge network.
+#
+# Local development keeps using acerola-sync/server/.config/docker/compose.yml.
+services:
+  server:
+    image: ${APP_IMAGE:?}
+    environment:
+      - DATABASE_URL=${DATABASE_URL:?}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:?}
+      - ANILIST_CLIENT_ID=${ANILIST_CLIENT_ID:?}
+      - ALLOWED_ANILIST_USER_ID=${ALLOWED_ANILIST_USER_ID:-}
+      - SERVER_PORT=3010
+      - RUST_LOG=info
+    networks:
+      - edge
+    # Uses the bash already in the image: no installing curl just for this. start_period gives
+    # time to the migrations, which the server applies on startup.
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "bash",
+          "-c",
+          'exec 3<>/dev/tcp/127.0.0.1/3010 && printf "GET /health HTTP/1.0\r\n\r\n" >&3 && grep -q "200 OK" <&3',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+      # start-first: the new task only takes traffic after its healthcheck passes.
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+        monitor: 45s
+      rollback_config:
+        parallelism: 1
+        order: start-first
+      labels:
+        acerola.app: sync
+        acerola.server: hetzner
+
+networks:
+  edge:
+    external: true

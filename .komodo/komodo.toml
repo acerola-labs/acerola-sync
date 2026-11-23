@@ -1,0 +1,126 @@
+# Komodo deploy of the Acerola Sync server (acerola-sync/server) on the hetzner server.
+# Names follow <server>_<app>; Swarm completes the services with _<service> (hetzner_sync_server).
+#
+#   Sync       applies this file (GitHub webhook on push to main).
+#   Repo       clone of main on the hetzner server; Build and Stack read from it.
+#   Build      acerola-sync/server/.config/docker/dockerfile built ON the hetzner server itself.
+#              No registry: the image stays local as sync:<short commit>-acerola.
+#   Stack      .komodo/compose.yml on the hetzner Swarm; komodo.sh runs the deploy steps and
+#              route.sh publishes api.sync.acerola.app on the server's Caddy (edge network).
+#   Procedure  Pull -> Build -> Deploy, triggered by the GitHub webhook
+#              (/listener/github/procedure/hetzner_sync/main).
+#   Action     native Swarm rollback to the previous version.
+#
+# Secrets are Komodo Variables (secret): ACEROLA_SYNC_DATABASE_URL, ACEROLA_SYNC_ENCRYPTION_KEY.
+
+[[resource_sync]]
+name = "sync"
+description = "Aplica o deploy do Acerola Sync (.komodo/komodo.toml do acerola-sync)"
+tags = ["env:hetzner", "app:sync"]
+[resource_sync.config]
+git_provider = "github.com"
+repo = "vinicius-gpl/acerola-sync"
+branch = "main"
+resource_path = [".komodo/komodo.toml"]
+delete = false
+
+[[repo]]
+name = "hetzner_sync"
+description = "Clone da main do acerola-sync no hetzner"
+tags = ["env:hetzner", "app:sync"]
+[repo.config]
+server = "hetzner"
+git_provider = "github.com"
+repo = "vinicius-gpl/acerola-sync"
+branch = "main"
+webhook_enabled = false
+links = ["https://github.com/vinicius-gpl/acerola-sync/tree/main/acerola-sync/server"]
+
+[[build]]
+name = "hetzner_sync"
+description = "Imagem do server do Acerola Sync, construída no próprio hetzner (sem registry)"
+tags = ["env:hetzner", "app:sync"]
+[build.config]
+builder = "hetzner"
+linked_repo = "hetzner_sync"
+webhook_enabled = false
+build_path = "acerola-sync/server"
+dockerfile_path = ".config/docker/dockerfile"
+image_name = "sync"
+image_tag = "hetzner"
+include_latest_tag = false
+include_version_tags = false
+include_commit_tag = true
+labels = """
+org.opencontainers.image.source=https://github.com/vinicius-gpl/acerola-sync
+acerola.app=sync
+acerola.server=hetzner
+"""
+links = ["https://api.sync.acerola.app"]
+
+[[stack]]
+name = "hetzner_sync"
+description = "Server do Acerola Sync no Swarm do hetzner"
+tags = ["env:hetzner", "app:sync"]
+[stack.config]
+swarm = "hetzner"
+project_name = "hetzner_sync"
+linked_repo = "hetzner_sync"
+webhook_enabled = false
+run_directory = ".komodo"
+file_paths = ["compose.yml"]
+extra_args = ["--resolve-image", "never", "--detach=false"]
+links = ["https://api.sync.acerola.app"]
+pre_deploy.command = "sh komodo.sh pre-deploy sync hetzner"
+compose_cmd_wrapper_include = ["config", "deploy"]
+compose_cmd_wrapper = '''
+DATABASE_URL='[[ACEROLA_SYNC_DATABASE_URL]]' \
+ENCRYPTION_KEY='[[ACEROLA_SYNC_ENCRYPTION_KEY]]' \
+ANILIST_CLIENT_ID='56273' \
+ALLOWED_ANILIST_USER_ID='6881079' \
+sh komodo.sh deploy sync hetzner [[COMPOSE_COMMAND]]
+'''
+post_deploy.command = "sh komodo.sh post-deploy sync hetzner"
+
+[[procedure]]
+name = "hetzner_sync"
+description = "Publica a main do Acerola Sync no hetzner: Pull, Build e Deploy"
+tags = ["env:hetzner", "app:sync"]
+[procedure.config]
+webhook_enabled = true
+
+[[procedure.config.stage]]
+name = "Pull"
+executions = [
+  { execution.type = "PullRepo", execution.params.repo = "hetzner_sync" },
+]
+
+[[procedure.config.stage]]
+name = "Build"
+executions = [
+  { execution.type = "RunBuild", execution.params.build = "hetzner_sync" },
+]
+
+[[procedure.config.stage]]
+name = "Deploy"
+executions = [
+  { execution.type = "DeployStack", execution.params.stack = "hetzner_sync" },
+]
+
+[[action]]
+name = "hetzner_sync_rollback"
+description = "Volta o server do Acerola Sync para a versão anterior (rollback do Swarm)"
+tags = ["env:hetzner", "app:sync"]
+[action.config]
+webhook_enabled = false
+file_contents = '''
+const stack = 'hetzner_sync';
+await komodo.execute_server_terminal(
+  {
+    server: 'hetzner',
+    command: `docker service ls -q --filter label=com.docker.stack.namespace=${stack} | xargs -r -n1 docker service rollback --detach=false`,
+    init: { command: 'sh' },
+  },
+  { onLine: (line) => console.log(line), onFinish: (code) => console.log(`exit ${code}`) },
+);
+'''
