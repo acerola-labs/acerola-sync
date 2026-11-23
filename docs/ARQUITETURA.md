@@ -221,13 +221,11 @@ a `DEPLOY_KEY` para poder escrever na `main` (os hooks do lefthook não rodam no
 Testes: `Tests/Extension` (`extension-tests.yml`: prettier, design, i18n, tipos, testes e build) e
 `Tests/Server` (`server-tests.yml`: fmt, clippy e testes) rodam em push e PR na `develop` e na `main`.
 
-**Deploy do server** (`acerola-sync/server/.config/ansible/deploy.yml`, igual ao relay): rsync da pasta do
-server (com `.config/docker/`), `.env` gerado do template, `docker compose up -d --build --wait` (o mesmo
-`compose.yml` de casa: porta só em `127.0.0.1`, na rede `proxy` do Caddy) e a config do Caddy gerada do
-template para o `domain` do `hosts.ini` (`/opt/caddy/conf.d/acerola-sync.caddy`, com reload só
-quando ela muda). Sem script shell no playbook: só módulos e templates em `server/.config/ansible/templates/`.
-Roda sozinho na tag `server/vX.Y.Z`, pelo botão do workflow `Deploy/Server` (testa antes) ou
-local com `mise run deploy`.
+**Deploy do server** (Komodo, `.komodo/` na raiz): a cada push na `main` o webhook do GitHub
+dispara a Procedure `hetzner_sync`: Pull do repo no hetzner, Build da imagem no próprio hetzner
+(sem registry, tag `<commit>-hetzner`) e Deploy da Stack no Swarm do servidor. O `komodo.sh`
+confere a imagem e o `route.sh` grava `api.sync.acerola.app` no Caddy do servidor
+(`conf.d/hetzner_sync.caddy`, rede `edge`). A Action `hetzner_sync_rollback` volta a versão anterior.
 
 No GitHub:
 
@@ -236,8 +234,7 @@ No GitHub:
   a pública e põe no `key` do manifest: é daí que sai o id fixo da extensão (o mesmo em qualquer
   PC, e o retorno do login do AniList depende dele). A mesma chave fica no 1Password, item
   "ACEROLA SYNC EXTENSION KEY", que o `mise run build:extension` usa no build local.
-- **Environment `production`** (usado pelo deploy):
-  - secrets: `DATABASE_URL`, `ENCRYPTION_KEY`, `SSH_PRIVATE_KEY`, `SSH_PASSPHRASE`;
-  - variables: `SERVER_IP`, `DOMAIN`, `ANILIST_CLIENT_ID`, `ALLOWED_ANILIST_USER_ID`.
+- **Webhooks**: o da Sync `sync` e o da Procedure `hetzner_sync` do Komodo, no push.
 
-Os valores ficam no `server/.env` local (fora do git); as chaves SSH, nos arquivos delas.
+No Komodo, as Variables secretas `ACEROLA_SYNC_DATABASE_URL` e `ACEROLA_SYNC_ENCRYPTION_KEY`.
+Os valores de desenvolvimento ficam no `server/.env` local (fora do git).

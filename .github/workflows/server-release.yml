@@ -1,8 +1,8 @@
 name: "Release/Server"
 
 # Tag `server/vX.Y.Z`. Only bumps `server/Cargo.toml` (and Cargo.lock) and pushes the commit back
-# to `main` and `develop`. No Release or image: deploy runs through Ansible
-# (`acerola-sync/server/.config/ansible`, see server-deploy.yml).
+# to `main` and `develop`. No Release or image: the push to `main` triggers the Komodo deploy
+# (.komodo/komodo.toml).
 
 on:
   push:

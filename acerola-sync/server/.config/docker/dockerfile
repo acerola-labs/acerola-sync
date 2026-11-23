@@ -4,7 +4,7 @@
 # and published in the stores, not served by the container.
 #
 # Build context: the server folder (see .config/docker/compose.yml). In production it sits
-# behind the server's Caddy, which handles domain and TLS (.config/ansible).
+# behind the server's Caddy, which handles domain and TLS (Komodo, .komodo/ at the repo root).
 
 FROM rust:1.98-bookworm AS build
 WORKDIR /repo/server
