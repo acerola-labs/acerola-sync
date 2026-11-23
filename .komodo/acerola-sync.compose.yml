@@ -1,7 +1,7 @@
 # Acerola Sync server on the hetzner Swarm (Komodo Stack hetzner_acerola-sync, see komodo.toml).
 # APP_IMAGE comes from komodo.sh: the image the Komodo Build left on this same server.
 # The variables come from the Stack's compose_cmd_wrapper (Komodo Variables), never from a .env.
-# Caddy (config) reaches the service as hetzner_acerola-sync_server:3010 over the edge network.
+# Caddy (config) reaches the service as hetzner_acerola-sync_server:3000 over the edge network.
 #
 # Local development keeps using acerola-sync/server/.config/docker/compose.yml.
 services:
@@ -12,7 +12,7 @@ services:
       - ENCRYPTION_KEY=${ENCRYPTION_KEY:?}
       - ANILIST_CLIENT_ID=${ANILIST_CLIENT_ID:?}
       - ALLOWED_ANILIST_USER_ID=${ALLOWED_ANILIST_USER_ID:-}
-      - SERVER_PORT=3010
+      - SERVER_PORT=3000
       - RUST_LOG=info
     networks:
       - edge
@@ -24,7 +24,7 @@ services:
           "CMD",
           "bash",
           "-c",
-          'exec 3<>/dev/tcp/127.0.0.1/3010 && printf "GET /health HTTP/1.0\r\n\r\n" >&3 && grep -q "200 OK" <&3',
+          'exec 3<>/dev/tcp/127.0.0.1/3000 && printf "GET /health HTTP/1.0\r\n\r\n" >&3 && grep -q "200 OK" <&3',
         ]
       interval: 30s
       timeout: 10s
