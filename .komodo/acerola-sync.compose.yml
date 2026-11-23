@@ -37,6 +37,10 @@ services:
         max-file: "3"
     deploy:
       replicas: 1
+      # Uses ~15 MB; the ceiling keeps a leak from taking the server's memory.
+      resources:
+        limits:
+          memory: 128M
       restart_policy:
         condition: on-failure
         delay: 5s
