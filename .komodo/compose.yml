@@ -1,7 +1,7 @@
-# Acerola Sync server on the hetzner Swarm (Komodo Stack hetzner_sync, see komodo.toml).
+# Acerola Sync server on the hetzner Swarm (Komodo Stack hetzner_acerola-sync, see komodo.toml).
 # APP_IMAGE comes from komodo.sh: the image the Komodo Build left on this same server.
 # The variables come from the Stack's compose_cmd_wrapper (Komodo Variables), never from a .env.
-# Caddy (config) reaches the service as hetzner_sync_server:3010 over the edge network.
+# Caddy (config) reaches the service as hetzner_acerola-sync_server:3010 over the edge network.
 #
 # Local development keeps using acerola-sync/server/.config/docker/compose.yml.
 services:
@@ -52,7 +52,7 @@ services:
         parallelism: 1
         order: start-first
       labels:
-        acerola.app: sync
+        acerola.app: acerola-sync
         acerola.server: hetzner
 
 networks:
