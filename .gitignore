@@ -32,4 +32,3 @@ desktop.ini
 .claude/settings.local.json
 
 # Inventário do Ansible com o IP do servidor
-acerola-sync/server/.config/ansible/hosts.ini
