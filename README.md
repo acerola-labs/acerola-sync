@@ -82,7 +82,7 @@ Uma tag por app, `<app>/vX.Y.Z`, sempre na `main` (`-rc.N` sai como pré-lançam
 | `extension/v1.2.0` | Sobe a versão, testa, gera os `.zip` de Chrome e Firefox e publica o Release. |
 | `server/v1.2.0` | Sobe a versão (commit de bump na `main`, que dispara o deploy). |
 
-O deploy é do Komodo, em [`.komodo/`](.komodo/): a cada push na `main`, o webhook do GitHub dispara a Procedure `hetzner_sync` (Pull, Build no próprio hetzner, sem registry, e Deploy da Stack no Swarm), e o `route.sh` publica `api.sync.acerola.app` no Caddy do servidor. Detalhes em [docs/ARQUITETURA.md](docs/ARQUITETURA.md#release-e-deploy) e o modelo de notas em [RELEASE.md](RELEASE.md).
+O deploy é do Komodo, em [`.komodo/`](.komodo/): a cada push na `main`, o webhook do GitHub dispara a Procedure `hetzner_acerola-sync` (Pull, Build no próprio hetzner, sem registry, e Deploy da Stack no Swarm), e o `route.sh` publica `api.sync.acerola.app` no Caddy do servidor. Detalhes em [docs/ARQUITETURA.md](docs/ARQUITETURA.md#release-e-deploy) e o modelo de notas em [RELEASE.md](RELEASE.md).
 
 ## Documentação
 
