@@ -222,10 +222,11 @@ Testes: `Tests/Extension` (`extension-tests.yml`: prettier, design, i18n, tipos,
 `Tests/Server` (`server-tests.yml`: fmt, clippy e testes) rodam em push e PR na `develop` e na `main`.
 
 **Deploy do server** (Komodo, `.komodo/` na raiz): a cada push na `main` o webhook do GitHub
-dispara a Procedure `hetzner_sync`: Pull do repo no hetzner, Build da imagem no próprio hetzner
+dispara a Procedure `hetzner_acerola-sync`: Pull do repo no hetzner, Build da imagem no próprio hetzner
 (sem registry, tag `<commit>-hetzner`) e Deploy da Stack no Swarm do servidor. O `komodo.sh`
 confere a imagem e o `route.sh` grava `api.sync.acerola.app` no Caddy do servidor
-(`conf.d/hetzner_sync.caddy`, rede `edge`). A Action `hetzner_sync_rollback` volta a versão anterior.
+(`conf.d/hetzner_acerola-sync.caddy`, rede `edge`). A Action `hetzner_acerola-sync_rollback` volta
+a versão anterior.
 
 No GitHub:
 
@@ -234,7 +235,7 @@ No GitHub:
   a pública e põe no `key` do manifest: é daí que sai o id fixo da extensão (o mesmo em qualquer
   PC, e o retorno do login do AniList depende dele). A mesma chave fica no 1Password, item
   "ACEROLA SYNC EXTENSION KEY", que o `mise run build:extension` usa no build local.
-- **Webhooks**: o da Sync `sync` e o da Procedure `hetzner_sync` do Komodo, no push.
+- **Webhooks**: o da Sync `acerola-sync` e o da Procedure `hetzner_acerola-sync` do Komodo, no push.
 
 No Komodo, as Variables secretas `ACEROLA_SYNC_DATABASE_URL` e `ACEROLA_SYNC_ENCRYPTION_KEY`.
 Os valores de desenvolvimento ficam no `server/.env` local (fora do git).

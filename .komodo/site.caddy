@@ -5,8 +5,8 @@ api.sync.acerola.app {
         Referrer-Policy "no-referrer"
     }
 
-    # Swarm service of the hetzner_sync stack, over the edge network.
-    reverse_proxy hetzner_sync_server:3010
+    # Swarm service of the hetzner_acerola-sync stack, over the edge network.
+    reverse_proxy hetzner_acerola-sync_server:3010
 
     encode zstd gzip
 
