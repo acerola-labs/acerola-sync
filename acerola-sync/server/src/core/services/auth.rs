@@ -54,6 +54,10 @@ pub async fn login(
 
     tracing::info!("[Auth] User {} logged in from '{}'", user.id, device);
 
+    // The scheduler decides from memory: a user it has never seen enters here, before the first
+    // sync below registers its start.
+    state.scheduler.refresh_user(&state.database_pool, user.id).await?;
+
     // The mirror starts empty: the first login already pulls the whole list.
     if is_first_login {
         let state = state.clone();

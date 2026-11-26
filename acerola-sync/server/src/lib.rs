@@ -22,6 +22,11 @@ pub async fn run() {
         env.allowed_anilist_user_id,
     );
 
+    state
+        .scheduler
+        .load(&state.database_pool)
+        .await
+        .expect("Erro ao carregar a agenda dos usuários");
     core::workers::scheduler::spawn(state.clone());
 
     let app = bios::build(state);

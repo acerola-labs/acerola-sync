@@ -2,7 +2,7 @@ use chrono::{DateTime, NaiveTime, Utc};
 use sqlx::PgPool;
 
 use crate::{
-    data::models::sync::{SyncLog, SyncRun, SyncSettings},
+    data::models::sync::{SchedulerSnapshot, SyncLog, SyncRun, SyncSettings},
     infra::error::DbError,
 };
 
@@ -18,12 +18,26 @@ pub async fn settings(pool: &PgPool, user_id: i64) -> Result<SyncSettings, DbErr
     .await?)
 }
 
-pub async fn all_enabled(pool: &PgPool) -> Result<Vec<SyncSettings>, DbError> {
-    Ok(sqlx::query_as(concat!(
-        "SELECT ",
-        sync_settings_columns!(""),
-        " FROM sync_settings WHERE schedule_enabled"
-    ))
+/// What the scheduler keeps in memory, for every user or for one (`user_id`). A user without a
+/// settings row (first login, before the first sync) gets the table defaults.
+pub async fn scheduler_snapshot(
+    pool: &PgPool, user_id: Option<i64>,
+) -> Result<Vec<SchedulerSnapshot>, DbError> {
+    Ok(sqlx::query_as(
+        "SELECT users.id AS user_id,
+                COALESCE(sync_settings.schedule_enabled, false) AS schedule_enabled,
+                COALESCE(sync_settings.schedule_times, '{}'::time[]) AS schedule_times,
+                sync_settings.last_scheduled_slot,
+                COALESCE(sync_settings.full_sync_every_hours, 24) AS full_sync_every_hours,
+                (SELECT max(started_at) FROM sync_runs WHERE sync_runs.user_id = users.id)
+                    AS last_run_started_at,
+                EXISTS (SELECT 1 FROM entries WHERE entries.user_id = users.id AND entries.dirty)
+                    AS has_pending
+         FROM users LEFT JOIN sync_settings ON sync_settings.user_id = users.id
+         WHERE $1::bigint IS NULL OR users.id = $1
+         ORDER BY users.id",
+    )
+    .bind(user_id)
     .fetch_all(pool)
     .await?)
 }
@@ -200,30 +214,6 @@ pub async fn find_run(
     .await?)
 }
 
-/// Users with automatic sync on (full-list interval other than "button only").
-pub async fn all_auto(pool: &PgPool) -> Result<Vec<SyncSettings>, DbError> {
-    Ok(sqlx::query_as(concat!(
-        "SELECT ",
-        sync_settings_columns!(""),
-        " FROM sync_settings WHERE full_sync_every_hours > 0"
-    ))
-    .fetch_all(pool)
-    .await?)
-}
-
-/// When the user's last sync started, of any kind and with any result.
-pub async fn last_run_started_at(
-    pool: &PgPool, user_id: i64,
-) -> Result<Option<DateTime<Utc>>, DbError> {
-    let row: Option<(DateTime<Utc>,)> = sqlx::query_as(
-        "SELECT max(started_at) FROM sync_runs WHERE user_id = $1 HAVING count(*) > 0",
-    )
-    .bind(user_id)
-    .fetch_optional(pool)
-    .await?;
-    Ok(row.map(|(at,)| at))
-}
-
 pub async fn recent_runs(pool: &PgPool, user_id: i64, limit: i64) -> Result<Vec<SyncRun>, DbError> {
     Ok(sqlx::query_as(concat!(
         "SELECT ",
@@ -240,24 +230,41 @@ pub async fn recent_runs(pool: &PgPool, user_id: i64, limit: i64) -> Result<Vec<
 mod tests {
     use super::*;
     use crate::{
-        data::repositories::users as user_repository,
-        infra::db::test_support::{user, TestDatabase},
+        data::{
+            models::entry::Entry,
+            repositories::{
+                entries as entry_repository, media as media_repository, users as user_repository,
+            },
+        },
+        infra::db::test_support::{media, user, TestDatabase},
     };
 
     #[tokio::test]
-    async fn teste_automatico_so_com_intervalo_e_conta_do_ultimo_sync() {
+    async fn teste_snapshot_da_agenda_traz_defaults_ultimo_sync_e_pendencias() {
         let Some(db) = TestDatabase::create().await else { return };
         user_repository::upsert(&db.pool, &user(1)).await.unwrap();
-        settings(&db.pool, 1).await.unwrap();
-        assert_eq!(last_run_started_at(&db.pool, 1).await.unwrap(), None);
-        // Default: whole list every 24h, so automatic sync is on.
-        assert_eq!(all_auto(&db.pool).await.unwrap().len(), 1);
+        user_repository::upsert(&db.pool, &user(2)).await.unwrap();
+
+        // User 1 never opened the sync screen: no settings row, table defaults apply.
+        let first = &scheduler_snapshot(&db.pool, Some(1)).await.unwrap()[0];
+        assert_eq!(first.full_sync_every_hours, 24);
+        assert!(!first.schedule_enabled && first.schedule_times.is_empty());
+        assert_eq!(first.last_run_started_at, None);
+        assert!(!first.has_pending);
 
         let run = start_run(&db.pool, 1, "AUTO", "INCREMENTAL").await.unwrap();
-        assert_eq!(last_run_started_at(&db.pool, 1).await.unwrap(), Some(run.started_at));
+        save_full_sync_interval(&db.pool, 2, 0).await.unwrap();
+        media_repository::upsert(&db.pool, &media(10, "ANIME", "Frieren")).await.unwrap();
+        entry_repository::upsert(&db.pool, &Entry { dirty: true, ..Entry::blank(2, 10) })
+            .await
+            .unwrap();
 
-        save_full_sync_interval(&db.pool, 1, 0).await.unwrap();
-        assert!(all_auto(&db.pool).await.unwrap().is_empty());
+        let all = scheduler_snapshot(&db.pool, None).await.unwrap();
+        assert_eq!(all.iter().map(|row| row.user_id).collect::<Vec<_>>(), [1, 2]);
+        assert_eq!(all[0].last_run_started_at, Some(run.started_at));
+        assert!(!all[0].has_pending);
+        assert_eq!(all[1].full_sync_every_hours, 0);
+        assert!(all[1].has_pending);
         db.drop().await;
     }
 

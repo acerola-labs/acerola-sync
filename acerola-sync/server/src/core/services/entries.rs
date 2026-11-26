@@ -237,7 +237,9 @@ pub async fn save(
                 last_push_error: Some(error.to_string()),
                 ..next
             };
-            (entry_repository::upsert(&state.database_pool, &pending).await?, true)
+            let saved = entry_repository::upsert(&state.database_pool, &pending).await?;
+            state.scheduler.pending_changed(user.id, true);
+            (saved, true)
         },
         Err(error) => return Err(error.into()),
     };
@@ -286,14 +288,17 @@ pub async fn delete(state: &AppState, user: &User, media_id: i64) -> Result<(), 
 }
 
 /// Resends to AniList what was left pending. Stops at the first transient error: if AniList is
-/// down, there is no point trying the rest now.
+/// down, there is no point trying the rest now. Leaves the scheduler knowing whether anything is
+/// still pending.
 pub async fn push_pending(state: &AppState, user: &User) -> Result<i32, AppError> {
     let pending = entry_repository::find_dirty(&state.database_pool, user.id).await?;
     if pending.is_empty() {
+        state.scheduler.pending_changed(user.id, false);
         return Ok(0);
     }
 
     let token = state.anilist_token(user)?;
+    let total = pending.len();
     let mut pushed = 0;
     for entry in pending {
         match state.anilist.save_entry(&token, save_variables(&entry)).await {
@@ -321,6 +326,7 @@ pub async fn push_pending(state: &AppState, user: &User) -> Result<i32, AppError
             },
         }
     }
+    state.scheduler.pending_changed(user.id, (pushed as usize) < total);
     Ok(pushed)
 }
 
