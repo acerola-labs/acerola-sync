@@ -58,3 +58,6 @@ Antes de mexer, carregue a skill certa e siga-a:
 - **Migrations** (`server/src/infra/db/migrations/`) ficam com os comentários em português: mudar o
   arquivo muda o checksum e o sqlx recusa o banco que já aplicou a versão antiga.
 - **`catppuccin.css`** fica com o comentário original: é cópia exata do acerola-reader.
+- **Actions fixadas por SHA, só da GitHub**: a organização `acerola-labs` exige SHA e só libera
+  actions da GitHub (`actions/*`). Escreva `uses: actions/x@<sha> # vN`; o Dependabot atualiza o
+  SHA. Toolchain do Rust pelo `rustup` do runner, cache com `actions/cache`, Release com `gh`.
