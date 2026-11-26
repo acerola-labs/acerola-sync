@@ -11,6 +11,7 @@
 	import type { NotificationItem } from '$lib/services/airing.service';
 	import ActivityIcon from '@lucide/svelte/icons/activity';
 	import BellIcon from '@lucide/svelte/icons/bell';
+	import CalendarDaysIcon from '@lucide/svelte/icons/calendar-days';
 	import ExpandIcon from '@lucide/svelte/icons/expand';
 	import LibraryIcon from '@lucide/svelte/icons/library';
 	import SearchIcon from '@lucide/svelte/icons/search';
@@ -24,6 +25,7 @@
 	import LoginScreen from './login-screen.svelte';
 	import MediaScreen from './media-screen.svelte';
 	import NotificationsScreen from './notifications-screen.svelte';
+	import ReleasesScreen from './releases-screen.svelte';
 	import SearchScreen from './search-screen.svelte';
 	import SettingsScreen from './settings-screen.svelte';
 
@@ -56,6 +58,7 @@
 
 	const navItems = $derived([
 		{ id: 'list', label: m['sync.nav.list'](), icon: LibraryIcon },
+		{ id: 'releases', label: m['sync.nav.releases'](), icon: CalendarDaysIcon },
 		{ id: 'search', label: m['sync.nav.search'](), icon: SearchIcon },
 		{ id: 'activity', label: m['sync.nav.activity'](), icon: ActivityIcon },
 		{ id: 'settings', label: m['sync.nav.settings'](), icon: SettingsIcon }
@@ -109,6 +112,8 @@
 {#snippet content(name: Screen)}
 	{#if name === 'list'}
 		<HomeScreen />
+	{:else if name === 'releases'}
+		<ReleasesScreen />
 	{:else if name === 'search'}
 		<SearchScreen />
 	{:else if name === 'activity'}

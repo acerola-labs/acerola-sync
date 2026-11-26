@@ -272,6 +272,21 @@ pub struct EntryPageData {
     pub page: EntryPage,
 }
 
+/// One page of media with the "has next" flag (season listing).
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SeasonPage {
+    pub page_info: PageInfo,
+    #[serde(default)]
+    pub media: Vec<Option<Media>>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+pub struct SeasonPageData {
+    pub page: SeasonPage,
+}
+
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AiringInfo {

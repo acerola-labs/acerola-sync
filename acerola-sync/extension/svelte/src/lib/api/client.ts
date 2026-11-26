@@ -7,6 +7,8 @@ import type {
 	LoginResult,
 	MediaDetail,
 	MediaType,
+	ReleaseDay,
+	ReleaseItem,
 	Resolved,
 	SavedEntry,
 	SearchHit,
@@ -154,6 +156,13 @@ export function createApi(serverUrl: string, sessionToken?: string | null, fetch
 		search: (q: string, mediaType?: MediaType, remote = false) =>
 			request<SearchHit[]>('GET', withQuery('/media/search', { q, mediaType, remote })),
 		media: (mediaId: number) => request<MediaDetail>('GET', `/media/${mediaId}`),
+
+		/** The week: the season's anime and what you follow, from the mirror. */
+		releasesWeek: (mediaType: MediaType) =>
+			request<ReleaseItem[]>('GET', withQuery('/releases/week', { mediaType })),
+		/** Day you chose for a title (0 = Sunday … 6 = Saturday); `null` goes back to AniList's time. */
+		saveReleaseDay: (mediaId: number, weekday: number | null) =>
+			request<ReleaseDay | null>('PUT', `/releases/${mediaId}/day`, { weekday }),
 
 		/** Starts the sync and returns right away; progress comes through `syncLogs`. */
 		sync: (full = false) =>

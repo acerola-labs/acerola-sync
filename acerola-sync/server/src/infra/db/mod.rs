@@ -21,6 +21,7 @@ pub fn get_migrations() -> Vec<Migration> {
     migrations.extend(entry_migrations());
     migrations.extend(sync_migrations());
     migrations.extend(tracking_migrations());
+    migrations.extend(release_migrations());
     // The version is global: sort so the Migrator applies 6 before 7 even when they come from
     // different domains.
     migrations.sort_by_key(|migration| migration.version);
@@ -98,6 +99,14 @@ fn tracking_migrations() -> Vec<Migration> {
             include_str!("./migrations/tracking/012_custom_site_progress_source.sql"),
         ),
     ]
+}
+
+fn release_migrations() -> Vec<Migration> {
+    vec![migration(
+        14,
+        "create_releases",
+        include_str!("./migrations/releases/014_create_releases.sql"),
+    )]
 }
 
 fn migration(version: i64, description: &'static str, sql: &'static str) -> Migration {

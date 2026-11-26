@@ -596,3 +596,90 @@ async fn test_full_sync_interval_only_accepts_offered_values() -> Result<()> {
     db.drop().await;
     Ok(())
 }
+
+#[tokio::test]
+async fn test_week_joins_the_season_with_the_list_and_keeps_chosen_days() -> Result<()> {
+    let Some(db) = TestDb::create().await else { return Ok(()) };
+    let anilist = MockServer::start().await;
+    let (season, year) =
+        acerola_sync_lib::core::services::releases::current_season(chrono::Utc::now());
+    let airing_at = chrono::Utc::now().timestamp() + 3600;
+
+    let mut followed = media(100, "ANIME", "Dandadan", Some(12));
+    followed["status"] = json!("RELEASING");
+    followed["nextAiringEpisode"] = json!({ "episode": 7, "airingAt": airing_at });
+    let mut reading = media(200, "MANGA", "Chainsaw Man", None);
+    reading["status"] = json!("RELEASING");
+    mock_graphql(&anilist, "Viewer", ResponseTemplate::new(200).set_body_json(viewer())).await;
+    mock_graphql(
+        &anilist,
+        "MediaListCollection",
+        ResponseTemplate::new(200).set_body_json(collection(vec![
+            entry(1, "CURRENT", 3, followed),
+            entry(2, "CURRENT", 40, reading),
+        ])),
+    )
+    .await;
+    // The season listing: one title the user does not follow.
+    let mut season_only = media(300, "ANIME", "Season Only", Some(12));
+    season_only["status"] = json!("RELEASING");
+    season_only["season"] = json!(season);
+    season_only["seasonYear"] = json!(year);
+    season_only["nextAiringEpisode"] = json!({ "episode": 2, "airingAt": airing_at });
+    mock_graphql(
+        &anilist,
+        "POPULARITY_DESC",
+        ResponseTemplate::new(200).set_body_json(json!({
+            "data": { "Page": { "pageInfo": { "hasNextPage": false }, "media": [season_only] } }
+        })),
+    )
+    .await;
+
+    let app = app_with(db.pool.clone(), &anilist);
+    let token = login(&app).await;
+    wait_sync_idle(&app, &token).await;
+
+    let (status, week) =
+        call(&app, Method::GET, "/releases/week?mediaType=anime", Some(&token), None).await;
+    assert_eq!(status, 200, "{week}");
+    let ids: Vec<i64> =
+        week.as_array().unwrap().iter().map(|item| item["media"]["id"].as_i64().unwrap()).collect();
+    assert_eq!(ids.len(), 2);
+    assert!(ids.contains(&100) && ids.contains(&300));
+    let followed = week.as_array().unwrap().iter().find(|item| item["media"]["id"] == 100).unwrap();
+    assert_eq!(followed["entry"]["progress"], 3);
+    assert_eq!(followed["manualWeekday"], serde_json::Value::Null);
+
+    // The second call serves the mirror: no new season request.
+    let requests_before = anilist.received_requests().await.unwrap().len();
+    call(&app, Method::GET, "/releases/week", Some(&token), None).await;
+    assert_eq!(anilist.received_requests().await.unwrap().len(), requests_before);
+
+    let (status, saved) =
+        call(&app, Method::PUT, "/releases/200/day", Some(&token), Some(json!({ "weekday": 3 })))
+            .await;
+    assert_eq!(status, 200, "{saved}");
+    assert_eq!(saved["weekday"], 3);
+    let (_, week) =
+        call(&app, Method::GET, "/releases/week?mediaType=MANGA", Some(&token), None).await;
+    assert_eq!(week[0]["media"]["id"], 200);
+    assert_eq!(week[0]["manualWeekday"], 3);
+
+    let (status, _) =
+        call(&app, Method::PUT, "/releases/200/day", Some(&token), Some(json!({ "weekday": 9 })))
+            .await;
+    assert_eq!(status, 400);
+    let (status, cleared) = call(
+        &app,
+        Method::PUT,
+        "/releases/200/day",
+        Some(&token),
+        Some(json!({ "weekday": null })),
+    )
+    .await;
+    assert_eq!(status, 200);
+    assert_eq!(cleared, serde_json::Value::Null);
+
+    db.drop().await;
+    Ok(())
+}

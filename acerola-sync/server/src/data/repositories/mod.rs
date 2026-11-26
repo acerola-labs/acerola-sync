@@ -53,6 +53,12 @@ macro_rules! entry_columns {
     };
 }
 
+macro_rules! release_day_columns {
+    ($prefix:literal) => {
+        columns!($prefix; user_id, media_id, weekday, created_at, updated_at)
+    };
+}
+
 macro_rules! media_columns {
     ($prefix:literal) => {
         columns!($prefix; id, id_mal, media_type, format, status, title_romaji, title_english, title_native, title_user_preferred, synonyms, description, episodes, chapters, volumes, duration, season, season_year, start_year, average_score, genres, is_adult, country_of_origin, cover_url, cover_color, banner_url, site_url, next_airing_episode, next_airing_at, anilist_updated_at, synced_at, search_text, details_synced_at, source, studios, start_date, end_date, external_links, relations)
@@ -61,6 +67,7 @@ macro_rules! media_columns {
 
 pub mod entries;
 pub mod media;
+pub mod releases;
 pub mod sync;
 pub mod tracking;
 pub mod users;
