@@ -33,6 +33,9 @@ Antes de mexer, carregue a skill certa e siga-a:
   `.stories.svelte`.
 - Nada de request desnecessário ao AniList: tela lê do espelho (Postgres); query leve na
   lista/busca; detalhe só uma vez por obra.
+- Nada de consulta periódica ao Postgres: o worker decide em memória
+  (`core/workers/scheduler_state.rs`) e só vai ao banco quando um sync vence ou há pendência.
+  Quem muda agenda, intervalo, início de sync ou pendência atualiza o `state.scheduler`.
 - Datas guardadas em UTC; a tela mostra no horário de Brasília.
 - Cores do tema em `theme/colors/catppuccin.css`, cópia exata do acerola-reader (só claro/escuro);
   raio e sombra em `theme/tokens.css`. Fora do Tailwind (aviso em shadow DOM no site), injete o
