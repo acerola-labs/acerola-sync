@@ -25,17 +25,24 @@ jobs:
       run:
         working-directory: acerola-sync/server
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
+      # The acerola-labs organization only allows GitHub-owned actions, pinned by SHA: the toolchain
+      # comes from the runner's rustup and the cache from actions/cache.
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt,clippy
+          rustup default stable
 
-      - name: Rust Cache
-        uses: swatinem/rust-cache@v2
+      - name: Rust cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
         with:
-          workspaces: acerola-sync/server
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            acerola-sync/server/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('acerola-sync/server/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
 
       - name: Format
         run: cargo fmt --check
