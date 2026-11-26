@@ -21,7 +21,7 @@ description = "Aplica o deploy do Acerola Sync (.komodo/komodo.toml do acerola-s
 tags = ["env:hetzner", "app:acerola-sync"]
 [resource_sync.config]
 git_provider = "github.com"
-repo = "vinicius-gpl/acerola-sync"
+repo = "acerola-labs/acerola-sync"
 branch = "main"
 resource_path = [".komodo/komodo.toml"]
 delete = false
@@ -33,10 +33,10 @@ tags = ["env:hetzner", "app:acerola-sync"]
 [repo.config]
 server = "hetzner"
 git_provider = "github.com"
-repo = "vinicius-gpl/acerola-sync"
+repo = "acerola-labs/acerola-sync"
 branch = "main"
 webhook_enabled = false
-links = ["https://github.com/vinicius-gpl/acerola-sync/tree/main/acerola-sync/server"]
+links = ["https://github.com/acerola-labs/acerola-sync/tree/main/acerola-sync/server"]
 
 [[build]]
 name = "hetzner_acerola-sync"
@@ -54,7 +54,7 @@ include_latest_tag = false
 include_version_tags = false
 include_commit_tag = true
 labels = """
-org.opencontainers.image.source=https://github.com/vinicius-gpl/acerola-sync
+org.opencontainers.image.source=https://github.com/acerola-labs/acerola-sync
 acerola.app=acerola-sync
 acerola.server=hetzner
 """
