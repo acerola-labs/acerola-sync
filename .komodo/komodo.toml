@@ -12,6 +12,8 @@
 #   Action     native Swarm rollback to the previous version.
 #
 # Secrets are Komodo Variables (secret): ACEROLA_SYNC_DATABASE_URL, ACEROLA_SYNC_ENCRYPTION_KEY.
+# The database is the `postgres` Deployment of the config repo (configuration/apps/postgres), on
+# the same edge network: postgres://acerola_sync:<ACEROLA_SYNC_DB_PASSWORD>@postgres:5432/acerola_sync.
 
 [[resource_sync]]
 name = "acerola-sync"

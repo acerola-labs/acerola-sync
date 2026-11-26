@@ -62,10 +62,11 @@ pub async fn save_full_sync_interval(
             sync_service::FULL_SYNC_INTERVALS
         )));
     }
-    Ok(Json(
+    let settings =
         sync_repository::save_full_sync_interval(&state.database_pool, auth.user.id, request.hours)
-            .await?,
-    ))
+            .await?;
+    state.scheduler.settings_saved(&settings);
+    Ok(Json(settings))
 }
 
 pub async fn save_schedule(
@@ -80,14 +81,14 @@ pub async fn save_schedule(
 
     // A time already past today counts as done: saving does not trigger a sync right away.
     let last_slot = schedule::latest_slot(&times, Utc::now());
-    Ok(Json(
-        sync_repository::save_schedule(
-            &state.database_pool,
-            auth.user.id,
-            request.enabled,
-            &times,
-            last_slot,
-        )
-        .await?,
-    ))
+    let settings = sync_repository::save_schedule(
+        &state.database_pool,
+        auth.user.id,
+        request.enabled,
+        &times,
+        last_slot,
+    )
+    .await?;
+    state.scheduler.settings_saved(&settings);
+    Ok(Json(settings))
 }

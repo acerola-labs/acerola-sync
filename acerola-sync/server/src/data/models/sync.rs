@@ -17,6 +17,19 @@ pub struct SyncSettings {
     pub full_sync_every_hours: i32,
 }
 
+/// One user's facts the scheduler keeps in memory (`core::workers::scheduler_state`), read from
+/// the database at startup and at login.
+#[derive(Debug, Clone, FromRow)]
+pub struct SchedulerSnapshot {
+    pub user_id: i64,
+    pub schedule_enabled: bool,
+    pub schedule_times: Vec<NaiveTime>,
+    pub last_scheduled_slot: Option<DateTime<Utc>>,
+    pub full_sync_every_hours: i32,
+    pub last_run_started_at: Option<DateTime<Utc>>,
+    pub has_pending: bool,
+}
+
 #[derive(Debug, Clone, FromRow, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SyncRun {
