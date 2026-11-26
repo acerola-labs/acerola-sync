@@ -79,7 +79,13 @@ Um sync por vez (`sync_lock`). O `POST /sync` responde **202** na hora e roda em
 - Salvar a agenda não dispara sync na hora: o horário que já passou hoje conta como atendido.
 - **O worker decide em memória** (`core/workers/scheduler_state.rs`): por usuário, horários, último horário atendido, intervalo do automático, início do último sync e se há entrada pendente. Carrega tudo do banco no boot e no login, e quem muda um desses fatos atualiza o `state.scheduler` (rotas de agenda e intervalo, `prepare` do sync, `save` e `push_pending` das entradas). Antes, o tick de 30 s fazia duas ou três consultas e um Postgres cobrado por tempo ligado (Neon) nunca dormia. Vale para uma instância só: com duas réplicas cada uma teria o seu mapa (as escritas continuam no banco, então o pior caso é um sync repetido, que o `sync_lock` e o `Conflict` absorvem).
 
-### 3.4 Tracking
+### 3.4 Semana (temporada e dias)
+
+- `GET /releases/week` serve do espelho. Para anime, antes confere `season_pulls`: a primeira vez puxa a temporada atual (`Page.media(season, seasonYear, sort: POPULARITY_DESC)`, 3 páginas de 50) e espera; passado um dia, serve o que tem e atualiza em segundo plano. A temporada vem do calendário de Brasília (`releases::current_season`).
+- A query leve (`LIST_MEDIA_FIELDS`) passou a pedir `season`, para a temporada ficar no espelho.
+- O dia de mangá (e de anime sem horário) é escolhido pela pessoa e fica em `release_days`; a tela decide o dia (escolhido → AniList → nenhum).
+
+### 3.5 Tracking
 
 1. **Resolver** (`POST /track/resolve`): qual obra do AniList é a página do site. Ordem: mapeamento salvo → ID informado pelo site (o MangaDex informa) → título no espelho (pg_trgm, similaridade ≥ 0,75) → busca no AniList (1 request). O resultado fica em `site_mappings`.
 2. **Correção manual** (`PUT /track/mapping`): grava com `source = MANUAL`, que a busca automática nunca sobrescreve.
@@ -90,7 +96,7 @@ Um sync por vez (`sync_lock`). O `POST /sync` responde **202** na hora e roda em
    - chegar no total conclui e preenche as datas (dia de Brasília).
 4. Toda mudança de progresso entra em `history`, com a origem (site ou manual) e a URL.
 
-### 3.5 Banco
+### 3.6 Banco
 
 | Tabela | Chave | Conteúdo |
 |---|---|---|
@@ -104,8 +110,10 @@ Um sync por vez (`sync_lock`). O `POST /sync` responde **202** na hora e roda em
 | `site_mappings` | `(user_id, site, identifier)` | `media_id`, `source` (`AUTO`/`MANUAL`) |
 | `history` | `id` | progresso anterior → novo, origem, URL |
 | `custom_sites` | `id` | match pattern, regex da URL, seletor do título |
+| `season_pulls` | `(season, season_year)` | quando a lista da temporada foi puxada do AniList (uma vez por dia) |
+| `release_days` | `(user_id, media_id)` | dia da semana escolhido à mão (0 = domingo … 6 = sábado, Brasília) |
 
-### 3.6 API
+### 3.7 API
 
 Todas as rotas, menos `/health`, `/auth/config` e `/auth/login`, exigem `Authorization: Bearer <token de sessão>`. Erros seguem `{ errorType, message }`.
 
@@ -121,6 +129,8 @@ Todas as rotas, menos `/health`, `/auth/config` e `/auth/login`, exigem `Authori
 | PATCH / DELETE | `/entries/{mediaId}` | edita ou remove (AniList + espelho) |
 | GET | `/media/search?q=&mediaType=&remote=` | busca no espelho; AniList só com `remote=true` ou sem resultado |
 | GET | `/media/{id}` | obra + entrada; busca o detalhe no AniList uma vez só |
+| GET | `/releases/week?mediaType=` | a semana: animes da temporada e o que você acompanha (ou mangás em leitura), com o dia escolhido |
+| PUT | `/releases/{mediaId}/day` | `{ weekday }` 0–6 escolhe o dia; `null` volta ao horário do AniList |
 | POST | `/sync?full=` | começa um sync (202); `full=true` força a lista inteira |
 | GET | `/sync/status` | agenda, últimos syncs, pendências |
 | GET | `/sync/runs/{id}/logs?after=` | o sync e as linhas de log depois de `after` |
@@ -130,14 +140,14 @@ Todas as rotas, menos `/health`, `/auth/config` e `/auth/login`, exigem `Authori
 | GET | `/history?limit=` | histórico |
 | GET/POST/PUT/DELETE | `/custom-sites[/{id}]` | sites personalizados (a regex é validada no server) |
 
-### 3.7 Login e uso pessoal
+### 3.8 Login e uso pessoal
 
 - O Client ID do app do AniList fica no `.env` do server (`ANILIST_CLIENT_ID`). A extensão só sabe o endereço do server e pede o Client ID em `/auth/config`.
 - A extensão faz o OAuth do AniList em **implicit grant** (`response_type=token`), como o AniMouto, via `browser.identity.launchWebAuthFlow`. O Client Secret não é usado.
 - O token vai ao server, que confere de quem é (`Viewer`), guarda criptografado e devolve um token de sessão aleatório. No banco fica só o hash.
 - Instância de uma pessoa: o primeiro login vira o dono. Outro usuário do AniList recebe 403. `ALLOWED_ANILIST_USER_ID` trava explicitamente.
 
-### 3.8 Variáveis de ambiente
+### 3.9 Variáveis de ambiente
 
 O pool do Postgres roda **sem cache de statements preparados** (`statement_cache_capacity(0)`): atrás de um pooler (pgbouncer), um statement preparado sobrevive ao restart e quebra depois de uma migration (`cached plan must not change result type`).
 
@@ -163,6 +173,7 @@ A mesma interface roda em dois modos (`lib/screens/app-shell.svelte`):
 
 Telas:
 - **Lista:** as palavras "Anime" e "Mangá" grandes são as abas de tipo. Abas por status com contagem (assistindo, completo, planejado, pausado, largado), como o MALSync. A última obra mexida vira o destaque "Continuar" com o +1 grande. Cards com selos de progresso, atraso e próximo episódio.
+- **Semana:** o que sai em cada dia, no horário de Brasília, de hoje em diante. Anime pelo horário do AniList (`next_airing_at`), em "Minha lista" ou na "Temporada" inteira (o server espelha os 150 animes mais populares da temporada uma vez por dia; a tela não gasta request). Mangá, e anime sem horário, ficam em "Sem dia definido" até você escolher o dia no seletor da linha (`release_days`); o dia escolhido vence o do AniList. Regras de dia e agrupamento em `lib/utils/week.utils.ts`.
 - **Obra:** banner, números (média, total, próximo episódio), status em fichas, progresso com +/−, nota e sinopse.
 - **Buscar:** espelho primeiro; o botão "Buscar também no AniList" gasta 1 request.
 - **Sync:** estado do último sync, botões "Sincronizar agora" e "Lista inteira", **logs ao vivo**, agenda (Brasília, com o UTC ao lado), syncs anteriores e o histórico do que foi marcado.

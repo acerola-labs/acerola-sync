@@ -4,6 +4,7 @@
 
 pub mod entry;
 pub mod media;
+pub mod release;
 pub mod sync;
 pub mod tracking;
 pub mod user;

@@ -68,6 +68,21 @@ const RELATION_LABELS: Record<string, () => string> = {
 	OTHER: m['sync.media.relation.other']
 };
 
+const WEEKDAY_LABELS: (() => string)[] = [
+	m['sync.releases.weekday.sunday'],
+	m['sync.releases.weekday.monday'],
+	m['sync.releases.weekday.tuesday'],
+	m['sync.releases.weekday.wednesday'],
+	m['sync.releases.weekday.thursday'],
+	m['sync.releases.weekday.friday'],
+	m['sync.releases.weekday.saturday']
+];
+
+/** Day of the week (0 = Sunday … 6 = Saturday) in the screen language. */
+export function weekdayLabel(weekday: number): string {
+	return WEEKDAY_LABELS[((weekday % 7) + 7) % 7]();
+}
+
 /** `LIGHT_NOVEL` → `Light novel`: for AniList values with no translation. */
 export function humanizeEnum(value: string): string {
 	const text = value.replace(/_/g, ' ').toLowerCase();
