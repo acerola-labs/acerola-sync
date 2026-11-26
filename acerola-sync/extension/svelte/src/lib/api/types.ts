@@ -118,6 +118,22 @@ export type EntryPatch = Partial<
 	Pick<Entry, 'status' | 'progress' | 'progressVolumes' | 'score' | 'notes' | 'private'>
 >;
 
+/** One title on the week screen. The day is decided on the screen (`week.utils`). */
+export type ReleaseItem = {
+	media: Media;
+	entry: Entry | null;
+	/** Day chosen by hand, 0 = Sunday … 6 = Saturday (Brasília); `null` follows AniList. */
+	manualWeekday: number | null;
+};
+
+export type ReleaseDay = {
+	userId: number;
+	mediaId: number;
+	weekday: number;
+	createdAt: string;
+	updatedAt: string;
+};
+
 export type SearchHit = {
 	media: Media;
 	entry: Entry | null;

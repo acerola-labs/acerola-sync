@@ -52,6 +52,25 @@ export function formatDateTime(iso: string | null | undefined, locale = 'pt-BR')
 	}).format(new Date(iso));
 }
 
+/** `14:30`, in São Paulo time. */
+export function formatTimeOfDay(iso: string | null | undefined, locale = 'pt-BR'): string {
+	if (!iso) return '';
+	return new Intl.DateTimeFormat(locale, {
+		timeZone: DISPLAY_TIME_ZONE,
+		hour: '2-digit',
+		minute: '2-digit'
+	}).format(new Date(iso));
+}
+
+/** `26/11`, in São Paulo time. */
+export function formatDayMonth(at: number | string | Date, locale = 'pt-BR'): string {
+	return new Intl.DateTimeFormat(locale, {
+		timeZone: DISPLAY_TIME_ZONE,
+		day: '2-digit',
+		month: '2-digit'
+	}).format(new Date(at));
+}
+
 /** Time until the next episode, short: `2d 4h`, `3h 10m`, `45m`. */
 export function countdown(iso: string | null | undefined, now = Date.now()): string | null {
 	if (!iso) return null;

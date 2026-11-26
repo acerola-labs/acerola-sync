@@ -1105,6 +1105,7 @@
 		},
 		"nav": {
 			"list": "Lista",
+			"releases": "Semana",
 			"search": "Buscar",
 			"activity": "Sync",
 			"settings": "Ajustes",
@@ -1499,6 +1500,53 @@
 		"airing": {
 			"episode": "Episódio {episode} saiu",
 			"badge": "Acerola Sync · {count} com episódio novo"
+		},
+		"releases": {
+			"eyebrow": "Lançamentos da semana · horário de Brasília",
+			"type": {
+				"label": "Tipo"
+			},
+			"scope": {
+				"label": "Mostrar",
+				"mine": "Minha lista",
+				"season": "Temporada · {season} {year}"
+			},
+			"today": "Hoje",
+			"tomorrow": "Amanhã",
+			"count": "{count} obras",
+			"countOne": "1 obra",
+			"noDay": {
+				"label": "Sem dia definido",
+				"hint": "Escolha o dia em que costuma sair"
+			},
+			"caption": {
+				"episode": "Ep {episode} · {time}",
+				"chapter": "Cap. {progress} lido",
+				"chapterNone": "Nenhum capítulo lido"
+			},
+			"notListed": "Fora da lista",
+			"chosen": "Dia escolhido",
+			"day": {
+				"pick": "Escolher o dia",
+				"title": "Em que dia sai?",
+				"follow": "Seguir o AniList",
+				"clear": "Sem dia",
+				"saved": "Dia salvo.",
+				"cleared": "Dia removido."
+			},
+			"empty": {
+				"label": "Nada esta semana",
+				"hint": "Adicione o que está acompanhando ou veja a temporada inteira."
+			},
+			"weekday": {
+				"sunday": "Domingo",
+				"monday": "Segunda",
+				"tuesday": "Terça",
+				"wednesday": "Quarta",
+				"thursday": "Quinta",
+				"friday": "Sexta",
+				"saturday": "Sábado"
+			}
 		},
 		"notifications": {
 			"eyebrow": "Avisos de episódio",

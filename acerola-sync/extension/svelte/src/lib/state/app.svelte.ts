@@ -15,7 +15,7 @@ import { toast } from 'svelte-sonner';
 import { browser } from 'wxt/browser';
 import { storage } from 'wxt/utils/storage';
 
-export type TopRoute = 'list' | 'search' | 'activity' | 'settings';
+export type TopRoute = 'list' | 'releases' | 'search' | 'activity' | 'settings';
 
 export type Route =
 	| { name: TopRoute }
@@ -26,7 +26,7 @@ export type Route =
 /** `popup`: the icon's small window. `page`: the same interface in a full tab (`app.html`). */
 export type AppMode = 'popup' | 'page';
 
-const TOP_ROUTES: TopRoute[] = ['list', 'search', 'activity', 'settings'];
+const TOP_ROUTES: TopRoute[] = ['list', 'releases', 'search', 'activity', 'settings'];
 
 export function isTopRoute(value: unknown): value is TopRoute {
 	return TOP_ROUTES.includes(value as TopRoute);

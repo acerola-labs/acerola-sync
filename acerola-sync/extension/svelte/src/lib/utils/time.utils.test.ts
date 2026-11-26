@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { countdown, saoPauloToUtc, shortUtc, utcToSaoPaulo } from './time.utils';
+import {
+	countdown,
+	formatDayMonth,
+	formatTimeOfDay,
+	saoPauloToUtc,
+	shortUtc,
+	utcToSaoPaulo
+} from './time.utils';
 
 describe('time.utils', () => {
 	it('converte o horário de São Paulo para UTC e de volta', () => {
@@ -16,6 +23,12 @@ describe('time.utils', () => {
 
 	it('encurta o horário UTC', () => {
 		expect(shortUtc('12:00:00')).toBe('12:00');
+	});
+
+	it('mostra hora e dia no horário de Brasília', () => {
+		expect(formatTimeOfDay('2026-11-27T01:30:00Z')).toBe('22:30');
+		expect(formatDayMonth('2026-11-27T01:30:00Z')).toBe('26/11');
+		expect(formatTimeOfDay(null)).toBe('');
 	});
 
 	it('mostra a contagem até o próximo episódio', () => {

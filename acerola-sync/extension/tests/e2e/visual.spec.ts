@@ -297,7 +297,7 @@ test('seletor de horário: cartão dentro do popup, hora escolhida no meio da co
 	await mockServer(page);
 	await page.goto(`chrome-extension://${extensionId}/popup.html`);
 	await expect(page.getByText('Sousou no Frieren').first()).toBeVisible();
-	await page.getByRole('navigation').last().getByRole('button').nth(2).click();
+	await page.getByRole('navigation').last().getByRole('button', { name: 'Sync' }).click();
 
 	const trigger = page.locator('[data-time-picker]');
 	await trigger.scrollIntoViewIfNeeded();
