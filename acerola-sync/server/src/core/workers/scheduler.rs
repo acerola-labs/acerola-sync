@@ -4,7 +4,7 @@ use chrono::Utc;
 
 use crate::{
     bios::state::AppState,
-    core::services::{entries as entry_service, schedule, sync as sync_service},
+    core::services::{entries as entry_service, sync as sync_service},
     data::repositories::{sync as sync_repository, users as user_repository},
     infra::error::AppError,
 };
@@ -14,7 +14,8 @@ const TICK: Duration = Duration::from_secs(30);
 const PUSH_EVERY_TICKS: u32 = 10;
 
 /// Background loop: runs the sync at the chosen times (UTC), the hourly automatic one and
-/// resends pending changes.
+/// resends pending changes. Every tick decides from `state.scheduler` (memory) and only touches
+/// the database when something is really due, so an idle server keeps the database idle too.
 pub fn spawn(state: AppState) {
     tokio::spawn(async move {
         if let Err(error) = sync_repository::fail_stale_runs(&state.database_pool).await {
@@ -42,21 +43,16 @@ pub fn spawn(state: AppState) {
     });
 }
 
-async fn run_due_syncs(state: &AppState) -> Result<(), AppError> {
-    let now = Utc::now();
-    for settings in sync_repository::all_enabled(&state.database_pool).await? {
-        let Some(slot) =
-            schedule::due_slot(&settings.schedule_times, settings.last_scheduled_slot, now)
-        else {
-            continue;
-        };
-        let Some(user) = user_repository::find(&state.database_pool, settings.user_id).await?
-        else {
+pub async fn run_due_syncs(state: &AppState) -> Result<(), AppError> {
+    for (user_id, slot) in state.scheduler.due_scheduled(Utc::now()) {
+        let Some(user) = user_repository::find(&state.database_pool, user_id).await? else {
             continue;
         };
 
-        // Marks before running: if the sync fails, it does not keep retrying every 30 s.
+        // Marks before running (database and memory): if the sync fails, it does not keep
+        // retrying every 30 s.
         sync_repository::mark_slot_done(&state.database_pool, user.id, slot).await?;
+        state.scheduler.slot_done(user.id, slot);
         tracing::info!("[Scheduler] Running scheduled sync for slot {}", slot);
         if let Err(error) = sync_service::run(state, &user, "SCHEDULED", false).await {
             tracing::warn!("[Scheduler] Scheduled sync failed: {}", error);
@@ -67,16 +63,9 @@ async fn run_due_syncs(state: &AppState) -> Result<(), AppError> {
 
 /// Automatic sync: what changed, hourly, and the whole list once the chosen interval is past
 /// (`choose_mode` decides). Keeps the next episode up to date for the extension's notices.
-async fn run_auto_syncs(state: &AppState) -> Result<(), AppError> {
-    let now = Utc::now();
-    for settings in sync_repository::all_auto(&state.database_pool).await? {
-        let last =
-            sync_repository::last_run_started_at(&state.database_pool, settings.user_id).await?;
-        if !schedule::auto_due(settings.full_sync_every_hours, last, now) {
-            continue;
-        }
-        let Some(user) = user_repository::find(&state.database_pool, settings.user_id).await?
-        else {
+pub async fn run_auto_syncs(state: &AppState) -> Result<(), AppError> {
+    for user_id in state.scheduler.due_auto(Utc::now()) {
+        let Some(user) = user_repository::find(&state.database_pool, user_id).await? else {
             continue;
         };
         match sync_service::run(state, &user, "AUTO", false).await {
@@ -87,12 +76,74 @@ async fn run_auto_syncs(state: &AppState) -> Result<(), AppError> {
     Ok(())
 }
 
-async fn push_all_pending(state: &AppState) -> Result<(), AppError> {
-    for user in user_repository::find_all(&state.database_pool).await? {
+pub async fn push_all_pending(state: &AppState) -> Result<(), AppError> {
+    for user_id in state.scheduler.with_pending() {
+        let Some(user) = user_repository::find(&state.database_pool, user_id).await? else {
+            state.scheduler.pending_changed(user_id, false);
+            continue;
+        };
         let pushed = entry_service::push_pending(state, &user).await?;
         if pushed > 0 {
             tracing::info!("[Scheduler] Pushed {} pending entries", pushed);
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use chrono::{Duration, NaiveTime};
+    use sqlx::postgres::PgPoolOptions;
+
+    use super::*;
+    use crate::{data::models::sync::SyncSettings, infra::anilist::AnilistClient};
+
+    /// A pool that fails on the first query: proves which ticks never reach the database.
+    fn state_without_database() -> AppState {
+        let pool = PgPoolOptions::new()
+            .acquire_timeout(std::time::Duration::from_millis(200))
+            .connect_lazy("postgres://nobody:nothing@127.0.0.1:9/none")
+            .expect("URL válida");
+        AppState::new(pool, AnilistClient::new("http://127.0.0.1:9"), [0; 32], "1".into(), None)
+    }
+
+    #[tokio::test]
+    async fn test_idle_tick_does_not_touch_the_database() {
+        let state = state_without_database();
+        state.scheduler.settings_saved(&SyncSettings {
+            user_id: 1,
+            schedule_enabled: true,
+            schedule_times: vec![NaiveTime::from_hms_opt(3, 0, 0).unwrap()],
+            last_scheduled_slot: Some(Utc::now()),
+            updated_at: Utc::now(),
+            last_pull_at: None,
+            last_full_sync_at: None,
+            full_sync_every_hours: 24,
+        });
+        state.scheduler.run_started(1, Utc::now());
+
+        assert!(run_due_syncs(&state).await.is_ok());
+        assert!(run_auto_syncs(&state).await.is_ok());
+        assert!(push_all_pending(&state).await.is_ok());
+    }
+
+    #[tokio::test]
+    async fn test_due_work_goes_to_the_database() {
+        let state = state_without_database();
+        state.scheduler.run_started(1, Utc::now() - Duration::hours(2));
+        state.scheduler.settings_saved(&SyncSettings {
+            user_id: 1,
+            schedule_enabled: false,
+            schedule_times: vec![],
+            last_scheduled_slot: None,
+            updated_at: Utc::now(),
+            last_pull_at: None,
+            last_full_sync_at: None,
+            full_sync_every_hours: 24,
+        });
+        state.scheduler.pending_changed(2, true);
+
+        assert!(run_auto_syncs(&state).await.is_err());
+        assert!(push_all_pending(&state).await.is_err());
+    }
 }

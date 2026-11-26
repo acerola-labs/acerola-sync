@@ -4,6 +4,7 @@ use sqlx::PgPool;
 use tokio::sync::Mutex;
 
 use crate::{
+    core::workers::scheduler_state::SchedulerState,
     data::models::user::User,
     infra::{anilist::AnilistClient, crypto, error::CryptoError},
 };
@@ -19,6 +20,9 @@ pub struct AppState {
     pub allowed_anilist_user_id: Option<i64>,
     /// One sync at a time: the manual and the scheduled one never run together.
     pub sync_lock: Arc<Mutex<()>>,
+    /// What the scheduler needs per user, in memory: the tick never queries the database to
+    /// find out that nothing is due.
+    pub scheduler: SchedulerState,
 }
 
 impl AppState {
@@ -33,6 +37,7 @@ impl AppState {
             anilist_client_id,
             allowed_anilist_user_id,
             sync_lock: Arc::new(Mutex::new(())),
+            scheduler: SchedulerState::default(),
         }
     }
 

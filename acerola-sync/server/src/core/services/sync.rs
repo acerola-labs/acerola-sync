@@ -125,6 +125,7 @@ async fn prepare(
     );
     let run =
         sync_repository::start_run(&state.database_pool, user.id, trigger, mode.as_str()).await?;
+    state.scheduler.run_started(user.id, run.started_at);
 
     Ok(PreparedRun { _guard: guard, run, mode, started_at, last_pull_at: settings.last_pull_at })
 }
