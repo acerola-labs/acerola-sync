@@ -8,7 +8,7 @@
 //! - `AIRING_FIELDS`: only the next episode, to update what is airing.
 
 const LIST_MEDIA_FIELDS: &str = r#"
-    id idMal type format status episodes chapters volumes duration seasonYear averageScore
+    id idMal type format status episodes chapters volumes duration season seasonYear averageScore
     genres synonyms siteUrl isAdult updatedAt startDate { year }
     title { romaji english native userPreferred }
     coverImage { large color }
@@ -81,6 +81,19 @@ pub fn airing_by_ids() -> String {
     .to_string()
 }
 
+/// Anime of one season, most popular first, 50 per page: the week screen's "whole season".
+pub fn season_media() -> String {
+    format!(
+        "query ($season: MediaSeason, $year: Int, $page: Int, $perPage: Int) {{
+            Page(page: $page, perPage: $perPage) {{
+                pageInfo {{ hasNextPage }}
+                media(type: ANIME, season: $season, seasonYear: $year, sort: POPULARITY_DESC,
+                      isAdult: false) {{ {LIST_MEDIA_FIELDS} }}
+            }}
+        }}"
+    )
+}
+
 pub fn save_media_list_entry() -> String {
     format!(
         "mutation ($mediaId: Int, $status: MediaListStatus, $progress: Int, $progressVolumes: Int,
@@ -127,7 +140,9 @@ mod tests {
 
     #[test]
     fn test_lista_e_busca_nao_pedem_sinopse_nem_banner() {
-        for query in [media_list_collection(), recently_updated_entries(), search_media()] {
+        for query in
+            [media_list_collection(), recently_updated_entries(), search_media(), season_media()]
+        {
             assert!(!query.contains("description"), "{query}");
             assert!(!query.contains("bannerImage"), "{query}");
             assert!(!query.contains("extraLarge"), "{query}");

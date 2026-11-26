@@ -200,6 +200,21 @@ impl AnilistClient {
         Ok((entries, data.page.page_info.has_next_page))
     }
 
+    /// One page (50) of a season's anime, most popular first. `page` starts at 1.
+    pub async fn season(
+        &self, token: Option<&str>, season: &str, year: i32, page: u32,
+    ) -> Result<(Vec<Media>, bool), AnilistError> {
+        let data: SeasonPageData = self
+            .request(
+                token,
+                &queries::season_media(),
+                json!({ "season": season, "year": year, "page": page, "perPage": queries::PAGE_SIZE }),
+            )
+            .await?;
+        let media = data.page.media.into_iter().flatten().collect();
+        Ok((media, data.page.page_info.has_next_page))
+    }
+
     /// Next episode of airing media, up to 50 per call.
     pub async fn airing(&self, token: &str, ids: &[i64]) -> Result<Vec<AiringInfo>, AnilistError> {
         let data: AiringData = self

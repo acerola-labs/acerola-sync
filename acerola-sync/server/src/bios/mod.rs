@@ -12,7 +12,7 @@ use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
 use crate::cmd::features::{
     auth as auth_cmd, entries as entries_cmd, health as health_cmd, media as media_cmd,
-    sync as sync_cmd, tracking as tracking_cmd,
+    releases as releases_cmd, sync as sync_cmd, tracking as tracking_cmd,
 };
 
 pub fn build(state: AppState) -> Router {
@@ -29,6 +29,8 @@ pub fn build(state: AppState) -> Router {
         .route("/entries/{media_id}/sync", post(media_cmd::sync_one))
         .route("/media/search", get(media_cmd::search))
         .route("/media/{media_id}", get(media_cmd::detail))
+        .route("/releases/week", get(releases_cmd::week))
+        .route("/releases/{media_id}/day", put(releases_cmd::save_day))
         .route("/sync", post(sync_cmd::run))
         .route("/sync/status", get(sync_cmd::status))
         .route("/sync/runs/{run_id}/logs", get(sync_cmd::logs))
