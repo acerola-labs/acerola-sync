@@ -21,9 +21,9 @@ flowchart LR
     UI[Popup<br/>Svelte 5] --> API
     SW -->|HTTPS + token de sessão| API
   end
-  subgraph Servidor [Docker · atrás do Traefik/Coolify]
-    API[server<br/>Rust + axum] <--> PG[(Postgres<br/>externo, via DATABASE_URL)]
-    SCH[scheduler<br/>tokio, mesmo processo] <--> PG
+  subgraph Servidor [hetzner · Swarm do Komodo, atrás do Caddy]
+    API[server<br/>Rust + axum] <--> PG[(Postgres<br/>container do config, via DATABASE_URL)]
+    SCH[scheduler<br/>tokio, decide em memória] -->|só quando algo vence| PG
   end
   API -->|escrita na hora| AL[AniList GraphQL]
   SCH -->|sync agendado · reenvio de pendências| AL
@@ -38,7 +38,7 @@ Rust + axum + sqlx, nas mesmas camadas do acerola-reader:
 | `bios` | env, pool do Postgres, `AppState`, rotas, CORS |
 | `cmd` | handlers (`features`) e payloads (`events`) de cada rota |
 | `core/services` | auth, entries (regras de edição), sync (espelho), schedule, search, tracking |
-| `core/workers` | `scheduler`: a cada 30 s confere a agenda; a cada 5 min reenvia pendências |
+| `core/workers` | `scheduler`: a cada 30 s confere a agenda e a cada 5 min as pendências, lendo só o `scheduler_state` (memória); vai ao banco só quando um sync vence ou há pendência |
 | `data` | models e repositories (SQL explícito) |
 | `infra` | cliente do AniList, crypto, migrations, erros |
 
@@ -77,6 +77,7 @@ Um sync por vez (`sync_lock`). O `POST /sync` responde **202** na hora e roda em
 - `sync_settings.schedule_times` é uma lista de horários `TIME` em UTC. A tela converte de/para o horário de Brasília.
 - Cada horário roda uma vez (`last_scheduled_slot`). Se o server ficou fora no horário, roda uma vez ao voltar, não uma por horário perdido.
 - Salvar a agenda não dispara sync na hora: o horário que já passou hoje conta como atendido.
+- **O worker decide em memória** (`core/workers/scheduler_state.rs`): por usuário, horários, último horário atendido, intervalo do automático, início do último sync e se há entrada pendente. Carrega tudo do banco no boot e no login, e quem muda um desses fatos atualiza o `state.scheduler` (rotas de agenda e intervalo, `prepare` do sync, `save` e `push_pending` das entradas). Antes, o tick de 30 s fazia duas ou três consultas e um Postgres cobrado por tempo ligado (Neon) nunca dormia. Vale para uma instância só: com duas réplicas cada uma teria o seu mapa (as escritas continuam no banco, então o pior caso é um sync repetido, que o `sync_lock` e o `Conflict` absorvem).
 
 ### 3.4 Tracking
 
@@ -189,7 +190,7 @@ Visual: paleta única do acerola-reader (`theme/colors/catppuccin.css`, só clar
 
 ## 5. Deploy
 
-`acerola-sync/server/.config/docker/compose.yml` sobe só o `server`. O Postgres é externo e vem do `DATABASE_URL` do `.env`. TLS e domínio ficam no Traefik/Coolify. O endereço do server é configurado na extensão (ex.: `https://sync.acerola.app`), e a extensão não precisa saber onde ele roda.
+`acerola-sync/server/.config/docker/compose.yml` sobe só o `server`. O Postgres é externo e vem do `DATABASE_URL` do `.env`. Em produção ele é o container `postgres` do repositório `config` (Komodo Deployment no hetzner, `configuration/apps/postgres`), na mesma rede `edge` da stack e sem porta publicada: `postgres://acerola_sync:…@postgres:5432/acerola_sync`. Banco e usuário são criados pelo script de init daquele app, a partir da Variable `ACEROLA_SYNC_DB_PASSWORD`; o backup diário (`pg_dumpall`, 14 dias) fica em `/opt/postgres/backups` no servidor. TLS e domínio ficam no Caddy do servidor. O endereço do server é configurado na extensão (ex.: `https://api.sync.acerola.app`), e a extensão não precisa saber onde ele roda.
 
 ## 6. Testes
 
@@ -237,5 +238,7 @@ No GitHub:
   "ACEROLA SYNC EXTENSION KEY", que o `mise run build:extension` usa no build local.
 - **Webhooks**: o da Sync `acerola-sync` e o da Procedure `hetzner_acerola-sync` do Komodo, no push.
 
-No Komodo, as Variables secretas `ACEROLA_SYNC_DATABASE_URL` e `ACEROLA_SYNC_ENCRYPTION_KEY`.
+No Komodo, as Variables secretas `ACEROLA_SYNC_DATABASE_URL` e `ACEROLA_SYNC_ENCRYPTION_KEY`, mais
+`ACEROLA_SYNC_DB_PASSWORD`, que o Postgres do `config` usa para criar o usuário `acerola_sync`
+(é a mesma senha que vai dentro da `ACEROLA_SYNC_DATABASE_URL`).
 Os valores de desenvolvimento ficam no `server/.env` local (fora do git).
