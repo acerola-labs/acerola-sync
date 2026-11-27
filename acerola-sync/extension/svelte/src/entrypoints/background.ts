@@ -6,9 +6,16 @@ import { m } from '$lib/paraglide/messages';
 import {
 	addNotifications,
 	checkAiring,
+	checkPlanned,
+	mediaIdFromNotification,
+	noticeMessage,
 	notificationId,
-	type NotificationItem
+	type Notice,
+	type NotificationItem,
+	type PlannedState
 } from '$lib/services/airing.service';
+import type { Api } from '$lib/api/client';
+import type { EntryWithMedia } from '$lib/api/types';
 import { getAuthedApi, saveSession } from '$lib/services/session.service';
 import { matchesPattern, originPattern } from '$lib/tracking/match-pattern';
 import { browser } from 'wxt/browser';
@@ -98,7 +105,33 @@ async function openPopup(): Promise<boolean> {
 
 const AIRING_ALARM = 'airing-check';
 const AIRING_EVERY_MINUTES = 15;
-const NOTIFICATION_PREFIX = 'airing:';
+/** Server page size for the lists the check reads. */
+const ENTRIES_PAGE = 200;
+
+/** Every entry of a status (anime and manga), page by page. */
+async function allEntries(api: Api, status: string): Promise<EntryWithMedia[]> {
+	const all: EntryWithMedia[] = [];
+	for (let offset = 0; ; offset += ENTRIES_PAGE) {
+		const page = await api.entries({ status, limit: ENTRIES_PAGE, offset });
+		all.push(...page);
+		if (page.length < ENTRIES_PAGE) return all;
+	}
+}
+
+/** Stores the notices for the screen and sends them through the system. */
+async function notify(fresh: Notice[]) {
+	if (!fresh.length) return;
+	const saved = (await storage.getItem<NotificationItem[]>(STORAGE_KEYS.notifications)) ?? [];
+	await storage.setItem(STORAGE_KEYS.notifications, addNotifications(saved, fresh, Date.now()));
+	for (const notice of fresh) {
+		await browser.notifications.create(notificationId(notice), {
+			type: 'basic',
+			iconUrl: browser.runtime.getURL('/icon/128.png'),
+			title: notice.title,
+			message: noticeMessage(notice)
+		});
+	}
+}
 
 /** Icon badge: how many media have a new episode beyond the progress. */
 async function setBadge(count: number) {
@@ -110,9 +143,9 @@ async function setBadge(count: number) {
 }
 
 /**
- * Checks what aired for the anime in progress: updates the badge and sends a system
- * notification for each episode aired since the last check. Clicking it opens the media
- * (where to watch).
+ * Checks what aired for the anime in progress (badge and a notice per episode aired since the
+ * last check) and what changed for the planned titles (premiere date, delay, release,
+ * cancellation). Clicking a notice opens the media.
  */
 async function checkAiringNow() {
 	const api = await getAuthedApi();
@@ -120,31 +153,26 @@ async function checkAiringNow() {
 	try {
 		const lists = await Promise.all(
 			(['CURRENT', 'REPEATING'] as const).map((status) =>
-				api.entries({ mediaType: 'ANIME', status, limit: 200 })
+				api.entries({ mediaType: 'ANIME', status, limit: ENTRIES_PAGE })
 			)
 		);
 		const seen = (await storage.getItem<Record<string, number>>(STORAGE_KEYS.airingSeen)) ?? {};
 		const result = checkAiring(lists.flat(), seen, Date.now());
 		await storage.setItem(STORAGE_KEYS.airingSeen, result.seen);
 		await setBadge(result.behind);
-		if (result.fresh.length) {
-			const saved =
-				(await storage.getItem<NotificationItem[]>(STORAGE_KEYS.notifications)) ?? [];
-			await storage.setItem(
-				STORAGE_KEYS.notifications,
-				addNotifications(saved, result.fresh, Date.now())
-			);
-		}
-		for (const episode of result.fresh) {
-			await browser.notifications.create(notificationId(episode), {
-				type: 'basic',
-				iconUrl: browser.runtime.getURL('/icon/128.png'),
-				title: episode.title,
-				message: m['sync.airing.episode']({ episode: episode.episode })
-			});
-		}
+		await notify(result.fresh);
 	} catch (error) {
 		console.warn('[Background] Airing check failed', error);
+	}
+	try {
+		const planned = await allEntries(api, 'PLANNING');
+		const seen =
+			(await storage.getItem<Record<string, PlannedState>>(STORAGE_KEYS.plannedSeen)) ?? {};
+		const result = checkPlanned(planned, seen, Date.now());
+		await storage.setItem(STORAGE_KEYS.plannedSeen, result.seen);
+		await notify(result.fresh);
+	} catch (error) {
+		console.warn('[Background] Planned check failed', error);
 	}
 }
 
@@ -228,9 +256,10 @@ export default defineBackground(() => {
 		if (port.name === 'popup') port.onDisconnect.addListener(() => void checkAiringNow());
 	});
 	browser.notifications.onClicked.addListener((id) => {
-		if (!id.startsWith(NOTIFICATION_PREFIX)) return;
+		const mediaId = mediaIdFromNotification(id);
+		if (mediaId === null) return;
 		void browser.notifications.clear(id);
-		void openMedia(Number(id.slice(NOTIFICATION_PREFIX.length).split(':')[0]));
+		void openMedia(mediaId);
 	});
 	void checkAiringNow();
 	browser.permissions.onAdded.addListener(() => void syncCustomScripts());

@@ -38,7 +38,8 @@ function anime(id: number, title: string, airing: string, listed: boolean): Rele
 			nextAiringEpisode: 7,
 			nextAiringAt: airing
 		}),
-		entry: listed ? makeEntry({ mediaId: id, progress: 6 }) : null,
+		// Up to date with the aired episodes: the cover shows the airing badge, not "behind".
+		entry: listed ? makeEntry({ mediaId: id, progress: 7 }) : null,
 		manualWeekday: null
 	};
 }
@@ -120,6 +121,7 @@ describe('ReleasesScreen', () => {
 	it('abre a obra ao clicar no título', async () => {
 		const user = userEvent.setup();
 		render(ReleasesScreen);
+		// The cover button carries the title as its name.
 		await user.click(await screen.findByRole('button', { name: 'Hoje à tarde' }));
 		expect(push).toHaveBeenCalledWith({ name: 'media', mediaId: 1 });
 	});
