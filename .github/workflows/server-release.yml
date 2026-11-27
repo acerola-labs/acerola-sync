@@ -2,17 +2,28 @@ name: "Release/Server"
 
 # Tag `server/vX.Y.Z`. Only bumps `server/Cargo.toml` (and Cargo.lock) and pushes the commit back
 # to `main` and `develop`. No Release or image: the push to `main` triggers the Komodo deploy
-# (.komodo/komodo.toml).
+# (.komodo/komodo.toml). `workflow_dispatch` republishes an existing tag (input `tag`).
+#
+# The bump is pushed with the job's GITHUB_TOKEN (`contents: write`): a push made with it fires
+# no other workflow, and the Komodo webhook still fires.
 
 on:
   push:
     tags:
       - 'server/v[0-9]+.[0-9]+.[0-9]+'
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to republish (server/vX.Y.Z)'
+        required: true
+        type: string
 
 concurrency:
   group: server-release
   cancel-in-progress: false
+
+env:
+  RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
   bump:
@@ -28,15 +39,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          ssh-key: ${{ secrets.DEPLOY_KEY }}
+          ref: ${{ inputs.tag || github.ref }}
           fetch-depth: 0
 
       - name: Check tag is on main
         working-directory: ${{ github.workspace }}
         run: |
           git fetch origin main
-          git merge-base --is-ancestor "$GITHUB_SHA" origin/main \
-            || { echo "::error::Tag $GITHUB_REF_NAME is not on main"; exit 1; }
+          git merge-base --is-ancestor "$(git rev-parse "$RELEASE_TAG^{commit}")" origin/main \
+            || { echo "::error::Tag $RELEASE_TAG is not on main"; exit 1; }
 
       - name: Setup Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
@@ -44,7 +55,7 @@ jobs:
           node-version: 25.9.0
 
       - name: Extract version
-        run: node ../scripts/release/bump.mjs --tag "$GITHUB_REF_NAME" >> "$GITHUB_ENV"
+        run: node ../scripts/release/bump.mjs --tag "$RELEASE_TAG" >> "$GITHUB_ENV"
 
       - name: Bump version
         run: node ../scripts/release/bump.mjs server "$VERSION"
@@ -55,24 +66,30 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add acerola-sync/server/Cargo.toml acerola-sync/server/Cargo.lock
-          if ! git diff --staged --quiet; then
-            git commit -m "[build](backend): Versão ${VERSION} [skip ci]"
-            BUMP_SHA=$(git rev-parse HEAD)
-            git checkout -- .
-
-            until git push origin HEAD:main; do
-              git fetch origin main
-              git checkout -- .
-              git rebase origin/main
-            done
-
-            git fetch origin develop
-            git checkout -B develop origin/develop
-            git cherry-pick "$BUMP_SHA"
-            git checkout -- .
-            until git push origin develop; do
-              git fetch origin develop
-              git checkout -- .
-              git rebase origin/develop
-            done
+          if git diff --staged --quiet; then
+            echo "Version already at ${VERSION}: nothing to commit."
+            exit 0
           fi
+          git commit -m "[build](backend): Versão ${VERSION} [skip ci]"
+          BUMP_SHA=$(git rev-parse HEAD)
+          git checkout -- .
+
+          # Retries only cover a concurrent push (non fast-forward); anything else fails fast.
+          push() {
+            local branch=$1 attempt=0
+            until git push origin "HEAD:$branch"; do
+              attempt=$((attempt + 1))
+              [ "$attempt" -lt 5 ] || { echo "::error::Could not push the version bump to $branch"; exit 1; }
+              git fetch origin "$branch"
+              git checkout -- .
+              git rebase "origin/$branch"
+            done
+          }
+
+          push main
+
+          git fetch origin develop
+          git checkout -B develop origin/develop
+          git cherry-pick "$BUMP_SHA"
+          git checkout -- .
+          push develop
