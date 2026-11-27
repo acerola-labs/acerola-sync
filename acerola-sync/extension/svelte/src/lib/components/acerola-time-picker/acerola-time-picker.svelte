@@ -90,7 +90,7 @@
 			role="listbox"
 			aria-label={label}
 			use:centerSelected
-			class="relative flex h-56 [scrollbar-width:none] flex-col gap-1 overflow-y-auto rounded-tile bg-surface fade-y px-1 py-[94px]"
+			class="relative flex h-52 [scrollbar-width:none] flex-col gap-1 overflow-y-auto rounded-tile bg-surface fade-y px-1 py-[86px]"
 		>
 			{#each items as item (item)}
 				<button
@@ -113,7 +113,9 @@
 {/snippet}
 
 <!-- Time picker in the app pattern: a pill with the big time; opens a card with the
-     hour (24h) and minute columns, without the browser's native picker. -->
+     hour (24h) and minute columns, without the browser's native picker. The card is sized to
+     fit the 600px popup whichever side it opens on (column h-52: the padding is half of it minus
+     half an item, so the first and last values still reach the middle). -->
 <Popover.Root bind:open>
 	<Popover.Trigger
 		aria-label={data.label}
@@ -131,6 +133,7 @@
 		<Popover.Content
 			sideOffset={8}
 			align="start"
+			collisionPadding={8}
 			onOpenAutoFocus={(event) => {
 				// Autofocus went to "00" and scrolled the column back to the top. Focus goes to the
 				// chosen hour, without scrolling (the column is already centered on it).

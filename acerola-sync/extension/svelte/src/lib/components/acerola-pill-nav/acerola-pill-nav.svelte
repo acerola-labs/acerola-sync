@@ -44,14 +44,23 @@
 			return;
 		}
 		const label = button.querySelector('[data-nav-label]');
-		const target = { x: button.offsetLeft, width: button.offsetWidth, opacity: 1 };
+		// Fractional boxes: `offsetLeft`/`offsetWidth` round to whole pixels, and a label such as
+		// "Semana" left the pill up to 0.5px off the item.
+		const rect = button.getBoundingClientRect();
+		const target = {
+			x: rect.left - nav.getBoundingClientRect().left,
+			width: rect.width,
+			opacity: 1
+		};
 
+		// `autoRound: false`: GSAP rounds `width` to whole pixels by default, which undid the
+		// fractional measure above.
 		if (first || prefersReducedMotion()) {
-			gsap.set(indicator, target);
+			gsap.set(indicator, { ...target, autoRound: false });
 			first = false;
 			return;
 		}
-		gsap.to(indicator, { ...target, duration: 0.42, ease: 'power3.out' });
+		gsap.to(indicator, { ...target, autoRound: false, duration: 0.42, ease: 'power3.out' });
 		if (label) {
 			gsap.fromTo(
 				label,

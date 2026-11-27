@@ -122,7 +122,11 @@ async function mockServer(page: Page, calls: { patched: unknown[]; synced: numbe
 				json: { run: run(logPolls >= 2 ? 'SUCCESS' : 'RUNNING'), logs }
 			});
 		}
-		if (url.pathname === '/history' || url.pathname === '/custom-sites')
+		if (
+			url.pathname === '/history' ||
+			url.pathname === '/custom-sites' ||
+			url.pathname === '/releases/week'
+		)
 			return route.fulfill({ json: [] });
 		return route.fulfill({
 			status: 404,

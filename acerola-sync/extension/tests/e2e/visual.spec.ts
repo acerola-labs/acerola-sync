@@ -110,7 +110,11 @@ async function mockServer(page: Pick<Page, 'route'> | BrowserContext) {
 					pendingEntries: 0
 				}
 			});
-		if (url.pathname === '/history' || url.pathname === '/custom-sites')
+		if (
+			url.pathname === '/history' ||
+			url.pathname === '/custom-sites' ||
+			url.pathname === '/releases/week'
+		)
 			return route.fulfill({ json: [] });
 		return route.fulfill({
 			status: 404,
