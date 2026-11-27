@@ -227,8 +227,10 @@ Tags por app, `<app>/vX.Y.Z` (desvio do padrão Acerola, que usa uma tag `vX.Y.Z
 | `extension/v1.2.0` | `.github/workflows/extension-release.yml` | Sobe a versão do `extension/package.json`, testa, gera os `.zip` de Chrome e Firefox, devolve o commit `[build](extension): Versão …` para `main` e `develop` e publica o Release (pré-lançamento numa tag `-rc.N`). |
 | `server/v1.2.0` | `.github/workflows/server-release.yml` | Só sobe a versão do `server/Cargo.toml`/`Cargo.lock` e devolve o commit `[build](backend): Versão …` para `main` e `develop`. Sem Release, sem imagem. |
 
-O bump é o `scripts/release/bump.mjs` (testado em `npm run test:release`). Os commits do bot usam
-a `DEPLOY_KEY` para poder escrever na `main` (os hooks do lefthook não rodam no CI).
+O bump é o `scripts/release/bump.mjs` (testado em `npm run test:release`). O commit do bot vai para
+a `main` e a `develop` com o `GITHUB_TOKEN` do próprio job (`contents: write`; os hooks do lefthook
+não rodam no CI). Para republicar uma tag, **Actions → Release/… → Run workflow** com a tag no
+campo `tag`: o workflow lê a tag informada em vez da do push.
 
 Testes: `Tests/Extension` (`extension-tests.yml`: prettier, design, i18n, tipos, testes e build) e
 `Tests/Server` (`server-tests.yml`: fmt, clippy e testes) rodam em push e PR na `develop` e na `main`.
@@ -242,7 +244,6 @@ a versão anterior.
 
 No GitHub:
 
-- **Repositório** (secret): `DEPLOY_KEY`, usada pelos workflows de release para o commit de versão.
 - **Repositório** (secret): `EXTENSION_KEY`, a chave privada RSA da extensão. O release tira dela
   a pública e põe no `key` do manifest: é daí que sai o id fixo da extensão (o mesmo em qualquer
   PC, e o retorno do login do AniList depende dele). A mesma chave fica no 1Password, item
