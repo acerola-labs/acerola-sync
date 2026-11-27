@@ -1499,6 +1499,11 @@
 		},
 		"airing": {
 			"episode": "Episode {episode} is out",
+			"dated": "Got a date: premieres {date}",
+			"delayed": "Postponed: now premieres {date}",
+			"hiatus": "Went on hiatus",
+			"released": "Released! It is out now",
+			"cancelled": "Cancelled on AniList",
 			"badge": "Acerola Sync · {count} with a new episode"
 		},
 		"releases": {
@@ -1554,7 +1559,7 @@
 			"open": "Notifications",
 			"empty": {
 				"label": "No alerts yet",
-				"hint": "When a new episode of an anime you're watching comes out, the alert shows up here."
+				"hint": "New episodes of what you watch, and dates, delays or releases of what you plan, show up here."
 			},
 			"new": "New",
 			"clear": "Clear",
