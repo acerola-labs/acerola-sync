@@ -173,7 +173,7 @@ A mesma interface roda em dois modos (`lib/screens/app-shell.svelte`):
 
 Telas:
 - **Lista:** as palavras "Anime" e "Mangá" grandes são as abas de tipo. Abas por status com contagem (assistindo, completo, planejado, pausado, largado), como o MALSync. A última obra mexida vira o destaque "Continuar" com o +1 grande. Cards com selos de progresso, atraso e próximo episódio.
-- **Semana:** o que sai em cada dia, no horário de Brasília, de hoje em diante. Anime pelo horário do AniList (`next_airing_at`), em "Minha lista" ou na "Temporada" inteira (o server espelha os 150 animes mais populares da temporada uma vez por dia; a tela não gasta request). Mangá, e anime sem horário, ficam em "Sem dia definido" até você escolher o dia no seletor da linha (`release_days`); o dia escolhido vence o do AniList. Regras de dia e agrupamento em `lib/utils/week.utils.ts`.
+- **Semana:** o que sai em cada dia, no horário de Brasília, de hoje em diante, nos mesmos cards de capa da Lista (`acerola-release-card`, com o horário do episódio como selo e o seletor de dia embaixo). Anime pelo horário do AniList (`next_airing_at`), em "Minha lista" ou na "Temporada" inteira (o server espelha os 150 animes mais populares da temporada uma vez por dia; a tela não gasta request). Mangá, e anime sem horário, ficam em "Sem dia definido" até você escolher o dia (`release_days`); o dia escolhido vence o do AniList. Regras de dia e agrupamento em `lib/utils/week.utils.ts`.
 - **Obra:** banner, números (média, total, próximo episódio), status em fichas, progresso com +/−, nota e sinopse.
 - **Buscar:** espelho primeiro; o botão "Buscar também no AniList" gasta 1 request.
 - **Sync:** estado do último sync, botões "Sincronizar agora" e "Lista inteira", **logs ao vivo**, agenda (Brasília, com o UTC ao lado), syncs anteriores e o histórico do que foi marcado.
@@ -199,6 +199,20 @@ Visual: paleta única do acerola-reader (`theme/colors/catppuccin.css`, só clar
 - O número do capítulo/episódio do site personalizado sai da URL (grupo `progress`) ou, no modo avançado, da página: título (`document.title`) ou um elemento (seletor CSS), com uma regex opcional (`progress_source`, `progress_selector`, `progress_pattern`). Em SPA, número igual ao da página anterior só vale depois de se repetir, porque a URL troca antes do HTML. A tela sugere onde o número parece estar ("Cap. 30" no título, no `h1` ou no seletor de capítulos), mas só marca com a regra confirmada.
 - Nada de código copiado do MALSync (GPL-3.0): as regras foram reescritas aqui, em MPL-2.0.
 
+### 4.3 Avisos (background)
+
+O service worker confere o espelho a cada 15 min (`browser.alarms`), ao abrir o navegador e quando o popup fecha, e compara com o que viu na última vez (`lib/services/airing.service.ts`; estado em `storage`). Nenhum request ao AniList: o server já mantém `next_airing_at` e o status em dia (sync automático de hora em hora, que atualiza anime no ar e tudo que ainda não saiu, mangá planejado incluso).
+
+| Aviso | Para | Dispara quando | Chave no `storage` |
+|---|---|---|---|
+| Episódio novo (e o número no ícone) | anime em "assistindo" ou "revendo" | o último episódio lançado passa do que foi visto e do seu progresso | `airingSeen` |
+| Ganhou data | planejado, ainda não lançado | `nextAiringEpisode` 1 ganha `airingAt` | `plannedSeen` |
+| Adiado | planejado | a estreia fica mais de 1 h depois da última vista, ou o status vira `HIATUS` | `plannedSeen` |
+| Lançou | planejado (anime e mangá) | status vira `RELEASING`, ou a hora da estreia passou | `plannedSeen` |
+| Cancelado | planejado | status vira `CANCELLED` | `plannedSeen` |
+
+A primeira olhada só monta a base, sem avisar o acumulado. Cada aviso vai pelo sistema (`browser.notifications`, clicar abre a obra) e fica na tela de Notificações (`notifications`, os 50 últimos; o sino mostra os não lidos). Ids: `airing:{mediaId}:{ep}`, `dated:{mediaId}:{data}`, `delayed:{mediaId}:{data}`, `released:{mediaId}`, `cancelled:{mediaId}`.
+
 ## 5. Deploy
 
 `acerola-sync/server/.config/docker/compose.yml` sobe só o `server`. O Postgres é externo e vem do `DATABASE_URL` do `.env`. Em produção ele é o container `postgres` do repositório `config` (Komodo Deployment no hetzner, `configuration/apps/postgres`), na mesma rede `edge` da stack e sem porta publicada: `postgres://acerola_sync:…@postgres:5432/acerola_sync`. Banco e usuário são criados pelo script de init daquele app, a partir da Variable `ACEROLA_SYNC_DB_PASSWORD`; o backup diário (`pg_dumpall`, 14 dias) fica em `/opt/postgres/backups` no servidor. TLS e domínio ficam no Caddy do servidor. O endereço do server é configurado na extensão (ex.: `https://api.sync.acerola.app`), e a extensão não precisa saber onde ele roda.
@@ -216,7 +230,7 @@ Visual: paleta única do acerola-reader (`theme/colors/catppuccin.css`, só clar
 - [ ] Validar Crunchyroll e Netflix nos sites de verdade. Os seletores foram escritos a partir do MALSync e do HTML conhecido, e só foram testados com HTML de exemplo.
 - [ ] Domínio final do server (`sync.acerola.app` ou outro).
 - [ ] Firefox: cadastrar também o redirect `*.extensions.allizom.org` no app do AniList.
-- [ ] Notificações do AniList (o AniMouto tem) e badge com episódios atrasados.
+- [ ] Notificações do AniList (o AniMouto tem). O badge com episódios atrasados e os avisos locais já existem (seção 4.3).
 
 ## Release e deploy
 
