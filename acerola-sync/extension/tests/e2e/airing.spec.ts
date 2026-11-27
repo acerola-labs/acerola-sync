@@ -23,6 +23,86 @@ function animeEntry(mediaId: number, progress: number, nextAiringEpisode: number
 	};
 }
 
+function plannedEntry(mediaId: number, premiere: string | null, status = 'NOT_YET_RELEASED') {
+	return {
+		userId: 1,
+		mediaId,
+		status: 'PLANNING',
+		progress: 0,
+		dirty: false,
+		media: {
+			id: mediaId,
+			mediaType: 'ANIME',
+			status,
+			titleUserPreferred: `Planejado ${mediaId}`,
+			coverUrl: null,
+			nextAiringEpisode: premiere ? 1 : null,
+			nextAiringAt: premiere
+		}
+	};
+}
+
+test('planejado que ganha data e depois lança avisa uma vez cada', async ({
+	context,
+	page,
+	extensionId
+}) => {
+	const premiere = new Date(Date.now() + 5 * 86_400_000).toISOString();
+	let planned = [plannedEntry(3, null)];
+	await context.route(`${SERVER}/**`, (route) => {
+		const url = new URL(route.request().url());
+		if (url.pathname !== '/entries') return route.fulfill({ json: [] });
+		return route.fulfill({
+			json: url.searchParams.get('status') === 'PLANNING' ? planned : []
+		});
+	});
+	const [worker] = context.serviceWorkers();
+	await worker.evaluate(
+		([server]) =>
+			chrome.storage.local.set({
+				serverUrl: server,
+				session: {
+					token: 'tok',
+					user: { id: 1, name: 'v', avatarUrl: null, siteUrl: null }
+				}
+			}),
+		[SERVER]
+	);
+	const check = async (expectedPremiere: string | null) => {
+		await page.goto(`chrome-extension://${extensionId}/popup.html`);
+		await page.waitForTimeout(500);
+		await page.goto('about:blank');
+		await expect
+			.poll(() => worker.evaluate(() => chrome.storage.local.get('plannedSeen')))
+			.toMatchObject({ plannedSeen: { 3: { premiere: expectedPremiere } } });
+	};
+	const notified = () =>
+		worker.evaluate(() => chrome.notifications.getAll().then((all) => Object.keys(all)));
+
+	// First look: baseline only.
+	await check(null);
+	expect(await notified()).toEqual([]);
+
+	// AniList gave it a date.
+	planned = [plannedEntry(3, premiere)];
+	await check(premiere);
+	expect(await notified()).toEqual([`dated:3:${premiere}`]);
+
+	// It came out: one "released" notice, and the status flip afterwards stays quiet.
+	planned = [plannedEntry(3, null, 'RELEASING')];
+	await check(null);
+	expect(await notified()).toEqual([`dated:3:${premiere}`, 'released:3']);
+	await check(null);
+	expect(await notified()).toEqual([`dated:3:${premiere}`, 'released:3']);
+
+	await page.goto(`chrome-extension://${extensionId}/popup.html`);
+	await page.locator('[data-notifications-bell]').click();
+	await expect(page.locator('[data-notification="released:3"]')).toContainText(/Lançou|Released/);
+	await expect(page.locator(`[data-notification="dated:3:${premiere}"]`)).toContainText(
+		/Ganhou data|Got a date/
+	);
+});
+
 test('número no ícone e aviso só do episódio que saiu depois da primeira olhada', async ({
 	context,
 	page,
