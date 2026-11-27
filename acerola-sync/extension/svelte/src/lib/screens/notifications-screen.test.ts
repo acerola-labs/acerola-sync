@@ -56,6 +56,34 @@ describe('NotificationsScreen', () => {
 		);
 	});
 
+	it('cada tipo de aviso tem a sua frase, e os antigos sem tipo são de episódio', async () => {
+		const base = { title: 'Obra', cover: null, at: '2026-11-13T12:00:00Z', read: true };
+		saved = [
+			{ ...base, id: 'dated:1:x', kind: 'dated', mediaId: 1, when: '2026-12-01T03:00:00Z' },
+			{
+				...base,
+				id: 'delayed:2:x',
+				kind: 'delayed',
+				mediaId: 2,
+				when: '2026-12-08T03:00:00Z'
+			},
+			{ ...base, id: 'delayed:3:unknown', kind: 'delayed', mediaId: 3, when: null },
+			{ ...base, id: 'released:4', kind: 'released', mediaId: 4 },
+			{ ...base, id: 'cancelled:5', kind: 'cancelled', mediaId: 5 },
+			{ ...base, id: 'airing:6:9', mediaId: 6, episode: 9 }
+		];
+		render(NotificationsScreen);
+
+		expect(
+			await screen.findByText(/Ganhou data.*01\/12.*00:00|Got a date.*01\/12/)
+		).toBeInTheDocument();
+		expect(screen.getByText(/Adiado.*08\/12|Postponed.*08\/12/)).toBeInTheDocument();
+		expect(screen.getByText(/hiato|hiatus/)).toBeInTheDocument();
+		expect(screen.getByText(/Lançou|Released/)).toBeInTheDocument();
+		expect(screen.getByText(/Cancelado|Cancelled/)).toBeInTheDocument();
+		expect(screen.getByText(/Episódio 9|Episode 9/)).toBeInTheDocument();
+	});
+
 	it('abre a obra e limpa a lista', async () => {
 		saved = [item(2, 7, true)];
 		render(NotificationsScreen);
