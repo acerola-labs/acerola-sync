@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReleaseItem } from '$lib/api/types';
 import { makeEntry, makeMedia } from '../../../tests/fixtures/media';
+import { formatTimeOfDay } from '$lib/utils/time.utils';
 import { weekdayInSaoPaulo } from '$lib/utils/week.utils';
 
 const api = { releasesWeek: vi.fn(), saveReleaseDay: vi.fn() };
@@ -22,11 +23,11 @@ vi.mock('$lib/state/app.svelte', () => ({
 import ReleasesScreen from './releases-screen.svelte';
 
 const DAY = 86_400_000;
-const inDays = (days: number, hour = 14) => {
-	const at = new Date(Date.now() + days * DAY);
-	at.setUTCHours(hour, 30, 0, 0);
-	return at.toISOString();
-};
+// Relative to now, keeping the time of day: `inDays(0)` is always "today" in Brasília, whatever
+// the clock says (fixing the UTC hour broke the test after 21:00 in Brasília, when the UTC date
+// is already tomorrow).
+const NOW = Date.now();
+const inDays = (days: number) => new Date(NOW + days * DAY).toISOString();
 
 function anime(id: number, title: string, airing: string, listed: boolean): ReleaseItem {
 	return {
@@ -48,7 +49,7 @@ describe('ReleasesScreen', () => {
 		api.releasesWeek.mockImplementation(async (type: string) =>
 			type === 'ANIME'
 				? [
-						anime(1, 'Hoje à tarde', inDays(0, 18), true),
+						anime(1, 'Hoje à tarde', inDays(0), true),
 						anime(2, 'Depois de amanhã', inDays(2), true),
 						anime(3, 'Só na temporada', inDays(2), false)
 					]
@@ -76,11 +77,13 @@ describe('ReleasesScreen', () => {
 		expect(screen.queryByText('Só na temporada')).toBeNull();
 
 		const lists = document.querySelectorAll<HTMLElement>('[data-weekday]');
-		expect(lists[0].dataset.weekday).toBe(String(weekdayInSaoPaulo(Date.now())));
+		expect(lists[0].dataset.weekday).toBe(String(weekdayInSaoPaulo(NOW)));
 		expect(within(lists[0]).getByText('Hoje à tarde')).toBeInTheDocument();
 		expect(screen.getByText(/Hoje · 1 obra|Today · 1 title/)).toBeInTheDocument();
-		// Airing time in Brasília (18:30 UTC = 15:30).
-		expect(screen.getByText('Ep 7 · 15:30')).toBeInTheDocument();
+		// Airing time shown in Brasília (every item shares the time of day: scoped to today's list).
+		expect(
+			within(lists[0]).getByText(`Ep 7 · ${formatTimeOfDay(inDays(0))}`)
+		).toBeInTheDocument();
 	});
 
 	it('a temporada inteira mostra o que está fora da lista', async () => {
