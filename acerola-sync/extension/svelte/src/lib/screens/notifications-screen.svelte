@@ -2,7 +2,7 @@
 	import AcerolaEmptyState from '$lib/components/acerola-empty-state/acerola-empty-state.svelte';
 	import { STORAGE_KEYS } from '$lib/constants/storage-keys';
 	import { m } from '$lib/paraglide/messages';
-	import type { NotificationItem } from '$lib/services/airing.service';
+	import { noticeMessage, type NotificationItem } from '$lib/services/airing.service';
 	import { app } from '$lib/state/app.svelte';
 	import { staggerIn } from '$lib/utils/motion.utils';
 	import { formatDateTime } from '$lib/utils/time.utils';
@@ -103,9 +103,7 @@
 						<div class="min-w-0 flex-1">
 							<p class="line-clamp-2 text-sm leading-tight font-bold">{item.title}</p>
 							<p class="text-xs text-muted-foreground">
-								{m['sync.airing.episode']({ episode: item.episode })} · {formatDateTime(
-									item.at
-								)}
+								{noticeMessage(item)} · {formatDateTime(item.at)}
 							</p>
 						</div>
 						{#if !item.read}

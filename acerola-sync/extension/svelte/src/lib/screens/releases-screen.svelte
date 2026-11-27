@@ -2,15 +2,14 @@
 	import type { MediaType, ReleaseItem } from '$lib/api/types';
 	import AcerolaChipTabs from '$lib/components/acerola-chip-tabs/acerola-chip-tabs.svelte';
 	import AcerolaEmptyState from '$lib/components/acerola-empty-state/acerola-empty-state.svelte';
-	import AcerolaReleaseRow from '$lib/components/acerola-release-row/acerola-release-row.svelte';
+	import AcerolaReleaseCard from '$lib/components/acerola-release-card/acerola-release-card.svelte';
 	import AcerolaSection from '$lib/components/acerola-section/acerola-section.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import { app } from '$lib/state/app.svelte';
-	import { seasonLabel, weekdayLabel } from '$lib/utils/labels.utils';
-	import { totalUnits } from '$lib/utils/media.utils';
+	import { seasonLabel, statusLabel, weekdayLabel } from '$lib/utils/labels.utils';
 	import { staggerIn } from '$lib/utils/motion.utils';
 	import { slidingIndicator } from '$lib/utils/sliding-indicator.utils';
-	import { formatTimeOfDay, formatDayMonth } from '$lib/utils/time.utils';
+	import { formatDayMonth, formatTimeOfDay } from '$lib/utils/time.utils';
 	import {
 		dateOfWeekday,
 		daysUntil,
@@ -20,9 +19,10 @@
 	import { onMount } from 'svelte';
 	import { toast } from 'svelte-sonner';
 
-	// The week, in Brasília time: every title on the day it lands, today first. Anime comes from
-	// the AniList airing time (or the whole season); manga and anime with no time get the day
-	// you choose. The server mirrors the season once a day, so this screen costs no request.
+	// The week, in Brasília time: every title on the day it lands, today first, as cover cards
+	// like the list. Anime comes from the AniList airing time (or the whole season); manga and
+	// anime with no time get the day you choose. The server mirrors the season once a day, so
+	// this screen costs no request.
 
 	type Scope = 'mine' | 'season';
 	const FOLLOWED = ['CURRENT', 'REPEATING', 'PLANNING', 'PAUSED'];
@@ -99,28 +99,27 @@
 		}
 	}
 
-	function caption(item: ReleaseItem) {
-		const { media, entry } = item;
-		if (media.mediaType === 'ANIME') {
-			return media.nextAiringEpisode && media.nextAiringAt
-				? m['sync.releases.caption.episode']({
-						episode: media.nextAiringEpisode,
-						time: formatTimeOfDay(media.nextAiringAt)
-					})
-				: [media.format, media.seasonYear].filter(Boolean).join(' · ');
-		}
-		return entry && entry.progress > 0
-			? m['sync.releases.caption.chapter']({ progress: entry.progress })
-			: m['sync.releases.caption.chapterNone']();
+	/** Cover badge: the next episode and its time (anime with a schedule). */
+	function badge(item: ReleaseItem) {
+		const { media } = item;
+		return media.mediaType === 'ANIME' && media.nextAiringEpisode && media.nextAiringAt
+			? m['sync.releases.caption.episode']({
+					episode: media.nextAiringEpisode,
+					time: formatTimeOfDay(media.nextAiringAt)
+				})
+			: null;
 	}
 
-	function detail(item: ReleaseItem) {
+	/** Under the title: the list state, the chapter read, or "not on your list". */
+	function subtitle(item: ReleaseItem) {
 		const { media, entry } = item;
-		if (!entry || media.mediaType !== 'ANIME') return null;
-		return m['sync.home.caption.episode']({
-			progress: entry.progress,
-			total: totalUnits(media) ?? '?'
-		});
+		if (!entry) return m['sync.releases.notListed']();
+		if (media.mediaType === 'MANGA') {
+			return entry.progress > 0
+				? m['sync.releases.caption.chapter']({ progress: entry.progress })
+				: m['sync.releases.caption.chapterNone']();
+		}
+		return statusLabel(entry.status, media.mediaType);
 	}
 
 	function dayHint(weekday: number | null, count: number) {
@@ -193,9 +192,9 @@
 	{/if}
 
 	{#if loading}
-		<div class="flex flex-col gap-3" aria-busy="true">
+		<div class="grid gap-x-3 gap-y-4 {page ? 'grid-cols-6' : 'grid-cols-3'}" aria-busy="true">
 			{#each [0, 1, 2] as index (index)}
-				<div class="h-24 animate-pulse rounded-tile bg-surface"></div>
+				<div class="aspect-[2/3] animate-pulse rounded-tile bg-surface"></div>
 			{/each}
 		</div>
 	{:else if groups.length === 0}
@@ -206,7 +205,7 @@
 			}}
 		/>
 	{:else}
-		<div class="flex flex-col gap-6" use:staggerIn={{ key: `${mediaType}-${scope}` }}>
+		<div class="flex flex-col gap-8" use:staggerIn={{ key: `${mediaType}-${scope}` }}>
 			{#each groups as group (group.weekday ?? 'none')}
 				<AcerolaSection
 					data={{
@@ -216,25 +215,28 @@
 								: weekdayLabel(group.weekday),
 						hint: dayHint(group.weekday, group.items.length)
 					}}
-					ui={{ class: group.weekday === today ? 'rounded-card bg-card p-3' : '' }}
+					ui={{ class: group.weekday === today ? 'rounded-card bg-card p-4' : '' }}
 				>
-					<ol class="flex flex-col gap-1" data-weekday={group.weekday ?? 'none'}>
+					<div
+						class="grid gap-x-3 gap-y-4 {page
+							? 'grid-cols-[repeat(auto-fill,minmax(150px,1fr))]'
+							: 'grid-cols-3'}"
+						data-weekday={group.weekday ?? 'none'}
+					>
 						{#each group.items as item (item.media.id)}
-							<li>
-								<AcerolaReleaseRow
-									data={{ item, caption: caption(item), detail: detail(item) }}
-									events={{
-										onOpen: () =>
-											app.push({ name: 'media', mediaId: item.media.id }),
-										onPickDay: item.entry
-											? (weekday) => pickDay(item, weekday)
-											: undefined
-									}}
-									ui={{ busy: busyIds.includes(item.media.id) }}
-								/>
-							</li>
+							<AcerolaReleaseCard
+								data={{ item, badge: badge(item), subtitle: subtitle(item) }}
+								events={{
+									onOpen: () =>
+										app.push({ name: 'media', mediaId: item.media.id }),
+									onPickDay: item.entry
+										? (weekday) => pickDay(item, weekday)
+										: undefined
+								}}
+								ui={{ busy: busyIds.includes(item.media.id) }}
+							/>
 						{/each}
-					</ol>
+					</div>
 				</AcerolaSection>
 			{/each}
 		</div>

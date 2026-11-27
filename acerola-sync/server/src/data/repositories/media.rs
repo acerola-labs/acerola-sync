@@ -130,14 +130,15 @@ pub async fn update_airing(
     Ok(())
 }
 
-/// Airing media the user follows (or plans): the only ones whose next episode needs updating in
-/// the incremental sync.
+/// Media the user follows (or plans) whose status or next episode can change: airing anime, and
+/// anything not yet released (a planned manga too, so its release shows up within the hour).
+/// The incremental sync refreshes only these.
 pub async fn releasing_ids_for_user(pool: &PgPool, user_id: i64) -> Result<Vec<i64>, DbError> {
     let rows: Vec<(i64,)> = sqlx::query_as(
         "SELECT media.id FROM media JOIN entries ON entries.media_id = media.id
          WHERE entries.user_id = $1
-           AND media.media_type = 'ANIME'
-           AND media.status IN ('RELEASING', 'NOT_YET_RELEASED')
+           AND ((media.media_type = 'ANIME' AND media.status = 'RELEASING')
+                OR media.status = 'NOT_YET_RELEASED')
            AND entries.status IN ('CURRENT', 'PLANNING', 'REPEATING', 'PAUSED')
          ORDER BY media.id",
     )
@@ -229,6 +230,30 @@ mod tests {
         assert_eq!(hits[0].media.id, 1);
 
         assert!(search(&db.pool, "frieren", Some("MANGA"), 10).await.unwrap().is_empty());
+        db.drop().await;
+    }
+
+    #[tokio::test]
+    async fn teste_refresh_inclui_anime_no_ar_e_tudo_que_ainda_nao_saiu() {
+        use crate::data::{
+            models::entry::Entry,
+            repositories::{entries as entry_repository, users as user_repository},
+        };
+        let Some(db) = TestDatabase::create().await else { return };
+        user_repository::upsert(&db.pool, &crate::infra::db::test_support::user(1)).await.unwrap();
+        for (id, kind, status) in [
+            (1, "ANIME", "RELEASING"),
+            (2, "ANIME", "NOT_YET_RELEASED"),
+            (3, "MANGA", "NOT_YET_RELEASED"),
+            (4, "MANGA", "RELEASING"),
+            (5, "ANIME", "FINISHED"),
+        ] {
+            let mut item = media(id, kind, "x");
+            item.status = Some(status.into());
+            upsert(&db.pool, &item).await.unwrap();
+            entry_repository::upsert(&db.pool, &Entry::blank(1, id)).await.unwrap();
+        }
+        assert_eq!(releasing_ids_for_user(&db.pool, 1).await.unwrap(), [1, 2, 3]);
         db.drop().await;
     }
 
