@@ -60,6 +60,36 @@ Todo projeto tem i18n, mesmo que hoje só fale português.
 - Parâmetro com nome em inglês: `"Ep {current} de {total}"`.
 - Conferido por `scripts/i18n/check-i18n.mjs` (hook do Claude, `pre-commit` e CI).
 
+### 2.1 Idioma na URL e no cookie (sites web) 🔒
+
+O idioma é da pessoa e vale para todo site em `*.acerola.app`; a URL diz o que a página mostra.
+
+| Endereço | Faz |
+|---|---|
+| `/pt-br/…`, `/en/…` | mostra naquele idioma e grava o cookie `acerola-locale` |
+| sem prefixo (`/`, `/docs/…`, link antigo) | vai para o idioma do cookie (sem cookie, `pt-br`) |
+| botão de idioma | troca a rota, e com ela o cookie |
+
+- **Os dois idiomas têm prefixo.** Nenhum fica na raiz: a rota sem prefixo é só a porta que segue
+  o cookie.
+- Paraglide com estratégia `['url', 'custom-acerola', 'baseLocale']` e `urlPatterns` com prefixo
+  nos dois idiomas, num `paraglide.config.ts` usado pelo `vite.config.ts` e por
+  `scripts/i18n.mjs` (o CLI não aceita `urlPatterns`). `custom-acerola` lê e grava o cookie
+  (`hooks.client.ts`); `reroute` com `deLocalizeUrl` (`hooks.ts`); `paraglideMiddleware` no
+  `hooks.server.ts`.
+- O `app.html` grava o cookie da rota com prefixo e redireciona a rota sem prefixo **antes da
+  primeira pintura** (funciona em site estático).
+- Link interno com `localizeHref(resolve('/…'))`; caminhos absolutos (`paths.relative: false`).
+- **Arquivos para robôs**: `robots.txt` só na raiz, apontando para `/sitemap.xml`. `/sitemap.xml`
+  e `/llms.txt` são índices de `/<locale>/sitemap.xml` e `/<locale>/llms.txt`. Cada sitemap e cada
+  página têm `hreflang` dos dois idiomas, com `x-default` na rota sem prefixo. Texto do `llms.txt`
+  vem das mensagens.
+- Cookie, domínio e tema: skill `acerola-design`, seção 11.1.
+- Modelo pronto em `reference/locale/` desta skill (no zip; no acerola-brand a fonte é o próprio
+  site, em `acerola-brand/`): `paraglide.config.ts`, `i18n.mjs`, `app.html`, `hooks.ts`,
+  `hooks.client.ts`, `hooks.server.ts`, `preference.util.ts` e as rotas `sitemap.xml` e
+  `llms.txt`.
+
 ## 3. Raiz do repositório
 
 A raiz guarda o que é do repositório; o código mora em pastas com o nome do local do commit.
@@ -172,6 +202,8 @@ Regras gerais: datas guardadas em UTC e mostradas na hora de Brasília; nada de 
 
 - [ ] Tudo que o usuário não vê em inglês (nomes, rotas, banco, chaves, logs, comentários).
 - [ ] Nenhum texto de tela no código: tudo via i18n, chaves aninhadas, `pt-br` e `en` iguais.
+- [ ] Site web: `/pt-br` e `/en`, rota sem prefixo segue o cookie, sitemap e `llms.txt` por
+      idioma (seção 2.1).
 - [ ] `node scripts/i18n/check-i18n.mjs` e `node scripts/design/check-design.mjs` sem erro.
 - [ ] Arquivo no lugar certo (seções 3 e 4).
 - [ ] Padrão seguido, ou desvio escrito no `CLAUDE.md`.

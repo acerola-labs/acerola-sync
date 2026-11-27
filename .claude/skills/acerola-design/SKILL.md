@@ -172,10 +172,27 @@ toda ação em até 100ms (toast, `pop`, troca de estado).
 
 O nome do papel é o mesmo em toda plataforma (`primary`, `surface`, `success-soft`…).
 
+### 11.1 Tema e idioma entre os sites 🔒
+
+Tema e idioma são da pessoa, não do site: trocou para claro no brand book, todo site em
+`*.acerola.app` abre claro.
+
+- Cookies `acerola-theme` (`dark` | `light`) e `acerola-locale` (`pt-br` | `en`), com
+  `domain=acerola.app`, `path=/`, `samesite=lax`, `secure` e `max-age` de 400 dias. Fora do
+  domínio (localhost, preview) ficam só no host.
+- Tema: só `dark` e `light`, **`dark` sem cookie**. Nada de opção "sistema" nem de valor salvo
+  fora do cookie (`localStorage`).
+- Lidos num script em linha no `app.html`, **antes da primeira pintura**: tema sem piscar e o
+  idioma pela regra da skill `acerola-project`, seção 2.1.
+- Modelo em `lib/utils/preference.util.ts` (`readCookie`, `writeCookie`, `cookieDomain`).
+- Extensão e app nativo (Android, desktop) não leem o cookie do domínio: guardam a escolha no
+  próprio storage.
+
 ## 12. Antes de entregar
 
 - [ ] `node scripts/design/check-design.mjs` sem erro.
 - [ ] Escuro e claro conferidos, no celular e no desktop.
+- [ ] Site web: tema e idioma pelos cookies do domínio, aplicados antes da primeira pintura (11.1).
 - [ ] Os quatro estados (carregando, vazio, erro, pronto) existem.
 - [ ] Uma ação primária; destaque usado uma vez; Titan só na marca.
 - [ ] Alvo ≥ 44px, foco visível, `aria-label` em ícone sozinho, reduced-motion respeitado.
