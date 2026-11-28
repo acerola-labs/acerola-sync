@@ -104,7 +104,7 @@ A raiz guarda o que é do repositório; o código mora em pastas com o nome do l
 │   ├── git/               branch-guard.sh · commit-msg.mjs · setup-git.mjs
 │   ├── design/            check-design.mjs
 │   ├── i18n/              check-i18n.mjs
-│   └── release/           release-notes.mjs · komodo-deploy.sh (release e deploy pela tag)
+│   └── release/           release-notes.mjs (notas da release do GitHub, pela tag)
 ├── .claude/               settings.json (hooks) · skills/ (acerola-design, acerola-project, acerola-git)
 ├── .github/               workflows/ · ISSUE_TEMPLATE/ · PULL_REQUEST_TEMPLATE.md · CODEOWNERS · dependabot.yml
 ├── acerola.config.json    project, commit.scopes, design (scan/extensions/exempt), i18n (messages/baseLocale)

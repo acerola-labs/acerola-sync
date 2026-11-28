@@ -47,9 +47,12 @@ Igual em todo projeto, independente da linguagem. Os hooks (lefthook) travam o q
 
 ## 2.1 Tags 🔒
 
-Tag é a **única** coisa que publica: deploy e release rodam a partir dela, nunca de push em branch.
+A `main` só recebe o merge da `release/X.Y.Z` (ou `hotfix/X.Y.Z`), e é esse merge que publica: o
+Komodo faz o deploy pelo webhook da Procedure no push da `main` (seção 5). A tag marca a versão
+nesse mesmo merge e cria a release do GitHub (`<local>-release.yml`). Push na `develop` ou em branch
+de trabalho nunca publica.
 
-| Tag | Formato | Publica? |
+| Tag | Formato | Release do GitHub? |
 |---|---|---|
 | Versão | `vMAJOR.MINOR.PATCH` (`v1.4.2`) | sim |
 | Pré-versão | `vX.Y.Z-rc.N` (`v1.5.0-rc.1`) | não: só para testar a release |
@@ -92,14 +95,15 @@ Instalação: `node scripts/git/setup-git.mjs` (grava o Git-Flow, o template e r
 
 ## 5. Actions
 
-- Um workflow por local e por função: `<local>-tests.yml`, `<local>-release.yml`,
-  `<local>-deploy.yml`. Nome visível `Tests/<Local>`, `Release/<Local>`, `Deploy/<Local>`.
+- Um workflow por local e por função: `<local>-tests.yml` e `<local>-release.yml` (e
+  `<local>-deploy.yml` só para o que não roda no Komodo, como Storybook no Cloudflare). Nome visível
+  `Tests/<Local>`, `Release/<Local>`, `Deploy/<Local>`.
 - Gatilho de teste: `push` e `pull_request` em `develop` e `main`, com `paths` do local e do próprio
   workflow; `workflow_dispatch` sempre.
-- Deploy e release: **só** `push` de tag de versão, `tags: ['v[0-9]+.[0-9]+.[0-9]+']` (pré-versão
-  não casa e não publica), mais `workflow_dispatch` para republicar uma tag. O primeiro passo
-  confere que a tag está na `main` e bate com o manifesto. `concurrency` para não sobrepor.
-- O ambiente de deploy (ex.: `github-pages`) aceita só tags `v*`, nenhuma branch.
+- Release (e deploy fora do Komodo): **só** `push` de tag de versão,
+  `tags: ['v[0-9]+.[0-9]+.[0-9]+']` (pré-versão não casa e não publica), mais `workflow_dispatch`
+  para republicar uma tag. O primeiro passo confere que a tag está na `main` e bate com o
+  manifesto. `concurrency` para não sobrepor.
 - Ordem dos passos: checkout → setup da linguagem com cache → instalar → lint → check/tipos →
   design → i18n → testes → build → publicar. Se algo falha, nada é publicado.
 - Nome de job, step e arquivo de workflow em inglês (`name: Upload files to R2`).
@@ -111,10 +115,13 @@ Instalação: `node scripts/git/setup-git.mjs` (grava o Git-Flow, o template e r
   Dependabot atualiza o SHA.
 - `<local>-release.yml` cria a release do GitHub da tag, com o título `Versão X.Y.Z` e as notas da
   seção da versão no `RELEASE.md` (`node scripts/release/release-notes.mjs X.Y.Z`).
-- `<local>-deploy.yml` publica pelo Komodo: roda a Procedure do app pela API
-  (`sh scripts/release/komodo-deploy.sh <procedure>`, com `vars.KOMODO_URL` e os secrets
-  `KOMODO_API_KEY` e `KOMODO_API_SECRET`) e espera ela terminar. No Komodo, a Procedure fica
-  **sem webhook**: push em branch nunca publica.
+- 🔒 **Deploy pelo Komodo, com dois webhooks no GitHub de cada app** (JSON, evento `push`, o
+  segredo de webhook do Komodo):
+  - o da Sync, `https://komodo.vinicius-gpl.com/listener/github/sync/<id da sync>/sync`, que
+    aplica o `.komodo/komodo.toml`;
+  - o da Procedure, `https://komodo.vinicius-gpl.com/listener/github/procedure/<servidor>_<app>/main`,
+    que faz Pull → Build → Deploy. No `komodo.toml`, a Procedure fica com `webhook_enabled = true`.
+  Build e Stack não têm webhook: quem chama os dois é a Procedure.
 
 ## 6. Dependabot
 
@@ -125,9 +132,9 @@ Semanal, na `develop`, agrupado, com o prefixo do padrão para passar no hook:
 
 1. `release/X.Y.Z` a partir da `develop`; versão nos manifestos (`package.json`, `Cargo.toml`, Gradle).
 2. `RELEASE.md` com o que mudou, para quem usa.
-3. Merge na `main` e na `develop` (`[merge](local): Versão X.Y.Z`).
+3. Merge na `main` e na `develop` (`[merge](local): Versão X.Y.Z`). O push na `main` dispara o
+   webhook da Procedure: o Komodo faz o deploy.
 4. Tag anotada `vX.Y.Z` no merge da `main`, com a mensagem da versão (seção 2.1), e
    `git push origin vX.Y.Z`.
-5. A tag dispara `<local>-deploy.yml` (Komodo) e `<local>-release.yml` (release do GitHub), que
-   publicam a partir dela.
+5. A tag dispara o `<local>-release.yml`, que cria a release do GitHub.
 6. Apaga a `release/X.Y.Z`, local e remota (seção 2): sobram só `main` e `develop`.
