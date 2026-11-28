@@ -61,6 +61,12 @@ Antes de mexer, carregue a skill certa e siga-a:
 - **Tags por app**: `extension/vX.Y.Z` e `server/vX.Y.Z` (pré-versão `-rc.N`), em vez de uma
   `vX.Y.Z` por repositório: os dois apps têm versões próprias. A tag continua sendo a única coisa
   que publica e precisa estar na `main`.
+- **Versão e `RELEASE.md` por app**: a versão entra na `release/X.Y.Z` com
+  `node scripts/release/bump.mjs <extension|server> X.Y.Z`, e a seção `## X.Y.Z · data` vai no
+  `RELEASE.md` do app (`acerola-sync/extension/` ou `acerola-sync/server/`; o da raiz só aponta para
+  eles). Nenhum workflow faz commit: cada release confere a tag contra o manifesto e publica a
+  seção como texto da release do GitHub, com o título `Versão X.Y.Z`. Na extensão, a instalação
+  (`.github/release/extension.md`) vai embaixo.
 - **Pastas**: os apps moram em `acerola-sync/extension/` e `acerola-sync/server/`; o local de
   commit do server é `backend`, não `server`, para manter o histórico.
 - **Extensão sem rotas**: telas em `lib/screens/` (o WXT não tem router) e import por `$lib/*`

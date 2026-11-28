@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Bumps an app's version from its release tag (`extension/v1.2.3` → 1.2.3).
+// Bumps an app's version in the release branch (`release/1.2.3`), and reads the version of a release
+// tag (`extension/v1.2.3` → 1.2.3) for the release workflows, which check it against the manifest.
 //
 //   node scripts/release/bump.mjs extension 1.2.3
 //   node scripts/release/bump.mjs server 1.2.3

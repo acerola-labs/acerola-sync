@@ -1,14 +1,3 @@
-## Acerola Sync — extensão v{{VERSION}}
-
-Sua lista do AniList, marcada sozinha enquanto você assiste e lê. Anime e mangá, com o seu próprio server espelhando tudo.
-
-### Destaques
-- **Rastreio automático** no Sakura Mangás, MangaDex, Crunchyroll, Netflix e em qualquer site que você cadastrar pela URL.
-- **Lista espelhada** com filtros (título, situação, formato, ano, gênero), "continuar de onde parou" e +1.
-- **Semana**: o que sai em cada dia, no horário de Brasília. Anime pelo horário do AniList (sua lista ou a temporada inteira); mangá no dia que você escolher.
-- **Ficha da obra** com informações, relacionadas e onde assistir/ler.
-- **Sync** incremental, em horários agendados ou só no botão.
-
 ### Instalação
 **Chrome / Edge / Brave**
 1. Baixe `acerola-sync-extension-{{VERSION}}-chrome.zip` e descompacte.

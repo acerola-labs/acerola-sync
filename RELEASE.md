@@ -1,24 +1,12 @@
-# Release vX.Y.Z
+# Versões
 
-Modelo das notas de release (mesmo do acerola-reader). A tag diz o app: `extension/vX.Y.Z` ou `server/vX.Y.Z`.
+Cada app tem a sua versão, a sua tag (`extension/vX.Y.Z` ou `server/vX.Y.Z`) e o seu `RELEASE.md`:
 
-## Destaques
-- Resumo curto (1-3 linhas) do que essa release traz de mais importante.
+| App | Versões |
+|---|---|
+| Extensão | [`acerola-sync/extension/RELEASE.md`](acerola-sync/extension/RELEASE.md) |
+| Server | [`acerola-sync/server/RELEASE.md`](acerola-sync/server/RELEASE.md) |
 
-## 🚀 Novidades
-- Descrição curta da funcionalidade nova.
-
-## 🐛 Correções
-- Descrição curta do bug corrigido.
-
-## ♻️ Mudanças e melhorias
-- Descrição curta da mudança/refatoração/melhoria de performance.
-
-## ⚠️ Breaking Changes
-- Descrição do que quebra e como migrar.
-
-## 🧹 Chores / CI / Docs
-- Descrição curta de tarefa interna, CI ou documentação.
-
-## 📦 Dependências
-- Nome da dependência atualizada e versão.
+O texto da release do GitHub é a seção da versão no arquivo do app
+(`node scripts/release/release-notes.mjs X.Y.Z <arquivo>`). Como montar o texto está no topo de
+cada um.
