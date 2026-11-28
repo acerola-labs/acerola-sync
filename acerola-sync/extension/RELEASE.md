@@ -19,6 +19,10 @@ Quem lê é quem vai instalar a extensão. Escreva para essa pessoa, não para q
 3. Cada item numa linha, começando pelo nome da coisa em negrito: `- **Semana:** …`.
 4. Fora do texto: CI, refatoração, teste, lint, docs internas e nomes de classe ou arquivo.
 
+## 1.8.2 · 28 nov 2026
+
+Nova forma de publicar as versões, sem mudança para quem usa.
+
 ## 1.8.1 · 28 nov 2026
 
 Projeto no padrão Acerola atualizado, sem mudança para quem usa.
