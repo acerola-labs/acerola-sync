@@ -84,6 +84,8 @@ Em Svelte, `lib/components/acerola-<nome>/`. Fora do Svelte, as classes `.ac-*` 
 | Vazio | `AcerolaEmptyState`: mascote (ou ícone redondo) + título `font-black` + uma frase + uma ação |
 | Diálogo | folha `rounded-sheet` com `shadow-float`; ação de confirmar `bg-foreground` |
 | Tela de erro | `AcerolaErrorScreen` / `.ac-error`: texto de um lado, mascote sobre o código do outro. Seção 6.1 |
+| Card clicável 🔒 | `.ac-card--link`: o card inteiro é o link e **mostra a ação parado**, não só no hover: `.ac-card__action` (verbo em `text-primary`) e a seta `.ac-card__go` (`primary-soft`, cheia no hover e no foco); sobe para `shadow-float`. Nunca só uma seta cinza |
+| Ícone em bloco | `.ac-icon-tile`: Lucide 20–24 num `rounded-inner` de 44px, **tom pelo significado** (`--primary` baixar/usar, `--info` docs, `--success`/`--warning`/`--danger` estado); sem significado, neutro. Itens de uma lista se distinguem pelo ícone, não por cores diferentes |
 
 ## 6. Estados obrigatórios
 
@@ -147,7 +149,11 @@ toda ação em até 100ms (toast, `pop`, troca de estado).
 
 - A acerola é o ícone; a mascote é a personalidade. A mascote nunca vira ícone de app.
 - Nunca recolorir, esticar, girar ou redesenhar ícone ou mascote.
-- Ícones de interface: **Lucide**, traço 2, nos tamanhos 16/18/20/24.
+- Ícones de interface: **Lucide**, traço 2, nos tamanhos 16/18/20/24. Em Svelte, o componente
+  (`@lucide/svelte/icons/<nome>`) com as props `size` e `class` (cor por token: `text-primary`);
+  em HTML puro, `<i data-lucide="<nome>">` com o `createIcons()` do pacote `lucide`.
+- 🔒 **Nunca SVG escrito no código** (`<svg>…</svg>` em componente, string ou template). Ícone é
+  Lucide; logo, mascote e arte são arquivos `.svg` usados por `<img src>`.
 
 ## 10. Texto da interface
 
@@ -172,10 +178,29 @@ toda ação em até 100ms (toast, `pop`, troca de estado).
 
 O nome do papel é o mesmo em toda plataforma (`primary`, `surface`, `success-soft`…).
 
+### 11.1 Tema e idioma entre os sites 🔒
+
+Tema e idioma são da pessoa, não do site: trocou para claro no brand book, todo site em
+`*.acerola.app` abre claro.
+
+- Cookies `acerola-theme` (`dark` | `light`) e `acerola-locale` (`pt-br` | `en`), com
+  `domain=acerola.app`, `path=/`, `samesite=lax`, `secure` e `max-age` de 400 dias. Fora do
+  domínio (localhost, preview) ficam só no host.
+- Tema: só `dark` e `light`, **`dark` sem cookie**. Nada de opção "sistema" nem de valor salvo
+  fora do cookie (`localStorage`).
+- Lidos num script em linha no `app.html`, **antes da primeira pintura**: tema sem piscar e o
+  idioma pela regra da skill `acerola-project`, seção 2.1.
+- Em tempo real: trocou o tema em outra aba ou em outro site Acerola, a página aberta troca na hora,
+  sem recarregar (`watchCookie`: evento `change` do `cookieStore` e nova leitura quando a aba volta).
+- Modelo em `lib/utils/preference.util.ts` (`readCookie`, `writeCookie`, `cookieDomain`, `watchCookie`).
+- Extensão e app nativo (Android, desktop) não leem o cookie do domínio: guardam a escolha no
+  próprio storage.
+
 ## 12. Antes de entregar
 
 - [ ] `node scripts/design/check-design.mjs` sem erro.
 - [ ] Escuro e claro conferidos, no celular e no desktop.
+- [ ] Site web: tema e idioma pelos cookies do domínio, aplicados antes da primeira pintura (11.1).
 - [ ] Os quatro estados (carregando, vazio, erro, pronto) existem.
 - [ ] Uma ação primária; destaque usado uma vez; Titan só na marca.
 - [ ] Alvo ≥ 44px, foco visível, `aria-label` em ícone sozinho, reduced-motion respeitado.
