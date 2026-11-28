@@ -58,8 +58,11 @@ Tag é a **única** coisa que publica: deploy e release rodam a partir dela, nun
   `v1.4`, `V1.4.2` ou `v01.4.2`). Sem nome de local: a tag vale para o repositório.
 - **MAJOR** quebra quem usa (token renomeado, componente removido, API diferente); **MINOR**
   acrescenta sem quebrar; **PATCH** só corrige. Antes da `v1.0.0`, MINOR pode quebrar.
-- Só nasce no commit de merge da `release/X.Y.Z` (ou `hotfix/X.Y.Z`) na `main`, **anotada** e com a
-  mensagem `[merge](local): Versão X.Y.Z` (`git tag -a vX.Y.Z -m "…"`).
+- Só nasce no commit de merge da `release/X.Y.Z` (ou `hotfix/X.Y.Z`) na `main`, **anotada**.
+- 🔒 **A mensagem da tag é uma mensagem, não um commit.** Diz em português, para quem usa, o que a
+  versão traz: `Versão X.Y.Z: <o que muda, numa frase>` (`git tag -a v1.4.2 -m "Versão 1.4.2:
+  cards clicáveis e o logo de cada app"`). Nunca `[tipo](local): …`: esse formato é do commit de
+  merge (`[merge](local): Versão X.Y.Z`), não da tag.
 - O número é o mesmo do manifesto (`package.json`, `Cargo.toml`, Gradle). O workflow recusa tag
   fora da `main` ou diferente do manifesto.
 - Tag publicada não se move nem se apaga. Saiu errado? Corrija e lance a próxima PATCH.
@@ -102,7 +105,16 @@ Instalação: `node scripts/git/setup-git.mjs` (grava o Git-Flow, o template e r
 - Nome de job, step e arquivo de workflow em inglês (`name: Upload files to R2`).
 - Segredo só em `secrets`; endereço e nome em `vars`. Passo opcional (ex.: R2) usa
   `if: ${{ vars.X != '' }}` para o workflow rodar sem ele.
-- Versão de action fixada na major (`actions/checkout@v4`); o Dependabot atualiza.
+- 🔒 **Só actions da GitHub (`actions/*`), fixadas por SHA** com a major em comentário:
+  `uses: actions/checkout@<sha> # v7`. A organização `acerola-labs` recusa qualquer outra (o
+  workflow nem inicia). Toolchain pelo próprio runner (`rustup`, `apt`), release com `gh`. O
+  Dependabot atualiza o SHA.
+- `<local>-release.yml` cria a release do GitHub da tag, com o título `Versão X.Y.Z` e as notas da
+  seção da versão no `RELEASE.md` (`node scripts/release/release-notes.mjs X.Y.Z`).
+- `<local>-deploy.yml` publica pelo Komodo: roda a Procedure do app pela API
+  (`sh scripts/release/komodo-deploy.sh <procedure>`, com `vars.KOMODO_URL` e os secrets
+  `KOMODO_API_KEY` e `KOMODO_API_SECRET`) e espera ela terminar. No Komodo, a Procedure fica
+  **sem webhook**: push em branch nunca publica.
 
 ## 6. Dependabot
 
@@ -114,6 +126,8 @@ Semanal, na `develop`, agrupado, com o prefixo do padrão para passar no hook:
 1. `release/X.Y.Z` a partir da `develop`; versão nos manifestos (`package.json`, `Cargo.toml`, Gradle).
 2. `RELEASE.md` com o que mudou, para quem usa.
 3. Merge na `main` e na `develop` (`[merge](local): Versão X.Y.Z`).
-4. Tag anotada `vX.Y.Z` no merge da `main` e `git push origin vX.Y.Z` (seção 2.1).
-5. A tag dispara `<local>-deploy.yml` e `<local>-release.yml`, que publicam a partir dela.
+4. Tag anotada `vX.Y.Z` no merge da `main`, com a mensagem da versão (seção 2.1), e
+   `git push origin vX.Y.Z`.
+5. A tag dispara `<local>-deploy.yml` (Komodo) e `<local>-release.yml` (release do GitHub), que
+   publicam a partir dela.
 6. Apaga a `release/X.Y.Z`, local e remota (seção 2): sobram só `main` e `develop`.
