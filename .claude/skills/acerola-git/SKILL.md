@@ -62,10 +62,17 @@ de trabalho nunca publica.
 - **MAJOR** quebra quem usa (token renomeado, componente removido, API diferente); **MINOR**
   acrescenta sem quebrar; **PATCH** só corrige. Antes da `v1.0.0`, MINOR pode quebrar.
 - Só nasce no commit de merge da `release/X.Y.Z` (ou `hotfix/X.Y.Z`) na `main`, **anotada**.
-- 🔒 **A mensagem da tag é uma mensagem, não um commit.** Diz em português, para quem usa, o que a
-  versão traz: `Versão X.Y.Z: <o que muda, numa frase>` (`git tag -a v1.4.2 -m "Versão 1.4.2:
-  cards clicáveis e o logo de cada app"`). Nunca `[tipo](local): …`: esse formato é do commit de
-  merge (`[merge](local): Versão X.Y.Z`), não da tag.
+- 🔒 **Regra core (também no `CLAUDE.md`): a mensagem é exatamente `Versão X.Y.Z: <o que a versão
+  traz, numa frase>`**, sem exceção nem desvio. `git tag -a v1.4.2 -m "Versão 1.4.2: cards clicáveis
+  e o logo de cada app"`.
+  - `X.Y.Z` é o número da própria tag, sem prefixo: `docs/prod/v1.2.1` → `Versão 1.2.1: …`.
+  - Nada entre o número e os dois pontos: `Versão 1.2.1 das docs: …` está errado.
+  - Depois dos dois pontos, uma frase em português, para quem usa, em minúscula e sem ponto final.
+  - Nunca `[tipo](local): …` (é do commit de merge, `[merge](local): Versão X.Y.Z`), lista de
+    commits, parágrafo ou corpo extra.
+  - Antes do push, nenhuma tag pode sair desta conferência:
+    `git for-each-ref refs/tags --format='%(refname:short)|%(contents:subject)' | grep -vE '\|Versão [0-9]+\.[0-9]+\.[0-9]+: '`.
+  - Fora do padrão: reescreva só a mensagem, no mesmo commit, em todo projeto com o mesmo erro.
 - O número é o mesmo do manifesto (`package.json`, `Cargo.toml`, Gradle). O workflow recusa tag
   fora da `main` ou diferente do manifesto.
 - Tag publicada não se move nem se apaga. Saiu errado? Corrija e lance a próxima PATCH.
