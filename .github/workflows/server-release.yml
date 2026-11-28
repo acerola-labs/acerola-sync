@@ -2,9 +2,9 @@ name: "Release/Server"
 
 # Tag `server/vX.Y.Z`, made on the release merge on `main` (that merge is what deploys the server:
 # Komodo, .komodo/komodo.toml). The version is written in the release branch (`release/X.Y.Z`,
-# `scripts/release/bump.mjs`): the tag must match `server/Cargo.toml`. Publishes the GitHub Release
-# titled `Versão X.Y.Z`, with the version's section of `server/RELEASE.md`. `workflow_dispatch`
-# republishes an existing tag (input `tag`).
+# `scripts/release/bump.mjs`): this only checks that the tag is on `main` and matches
+# `server/Cargo.toml`. No GitHub release: only the extension, which is downloaded, has one.
+# `workflow_dispatch` checks an existing tag again (input `tag`).
 
 on:
   push:
@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to republish (server/vX.Y.Z)'
+        description: 'Tag to check (server/vX.Y.Z)'
         required: true
         type: string
 
@@ -25,11 +25,9 @@ env:
   RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
-  release:
-    name: Release
+  check:
+    name: Check the version tag
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     defaults:
       run:
         working-directory: acerola-sync
@@ -61,20 +59,3 @@ jobs:
           cargo=$(sed -n 's/^version = "\(.*\)"/\1/p' server/Cargo.toml | head -n 1)
           [ "$cargo" = "$VERSION" ] \
             || { echo "::error::Tag $RELEASE_TAG differs from server/Cargo.toml version $cargo"; exit 1; }
-
-      # The release text is the version's section in server/RELEASE.md (acerola-git 5).
-      - name: Release notes
-        working-directory: ${{ github.workspace }}
-        run: node scripts/release/release-notes.mjs "$VERSION" acerola-sync/server/RELEASE.md > "$RUNNER_TEMP/notes.md"
-
-      # With the gh CLI of the runner: the organization only allows GitHub-owned actions.
-      - name: Publish the GitHub release
-        working-directory: ${{ github.workspace }}
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            gh release edit "$RELEASE_TAG" --title "Versão ${VERSION}" --notes-file "$RUNNER_TEMP/notes.md"
-          else
-            gh release create "$RELEASE_TAG" --verify-tag --title "Versão ${VERSION}" --notes-file "$RUNNER_TEMP/notes.md"
-          fi
