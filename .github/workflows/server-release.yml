@@ -1,11 +1,10 @@
 name: "Release/Server"
 
-# Tag `server/vX.Y.Z`. Only bumps `server/Cargo.toml` (and Cargo.lock) and pushes the commit back
-# to `main` and `develop`. No Release or image: the push to `main` triggers the Komodo deploy
-# (.komodo/komodo.toml). `workflow_dispatch` republishes an existing tag (input `tag`).
-#
-# The bump is pushed with the job's GITHUB_TOKEN (`contents: write`): a push made with it fires
-# no other workflow, and the Komodo webhook still fires.
+# Tag `server/vX.Y.Z`, made on the release merge on `main` (that merge is what deploys the server:
+# Komodo, .komodo/komodo.toml). The version is written in the release branch (`release/X.Y.Z`,
+# `scripts/release/bump.mjs`): the tag must match `server/Cargo.toml`. Publishes the GitHub Release
+# titled `Versão X.Y.Z`, with the version's section of `server/RELEASE.md`. `workflow_dispatch`
+# republishes an existing tag (input `tag`).
 
 on:
   push:
@@ -26,8 +25,8 @@ env:
   RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
-  bump:
-    name: Bump version
+  release:
+    name: Release
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -57,39 +56,25 @@ jobs:
       - name: Extract version
         run: node ../scripts/release/bump.mjs --tag "$RELEASE_TAG" >> "$GITHUB_ENV"
 
-      - name: Bump version
-        run: node ../scripts/release/bump.mjs server "$VERSION"
-
-      - name: Commit version bump
-        working-directory: ${{ github.workspace }}
+      - name: Check the tag against Cargo.toml
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add acerola-sync/server/Cargo.toml acerola-sync/server/Cargo.lock
-          if git diff --staged --quiet; then
-            echo "Version already at ${VERSION}: nothing to commit."
-            exit 0
+          cargo=$(sed -n 's/^version = "\(.*\)"/\1/p' server/Cargo.toml | head -n 1)
+          [ "$cargo" = "$VERSION" ] \
+            || { echo "::error::Tag $RELEASE_TAG differs from server/Cargo.toml version $cargo"; exit 1; }
+
+      # The release text is the version's section in server/RELEASE.md (acerola-git 5).
+      - name: Release notes
+        working-directory: ${{ github.workspace }}
+        run: node scripts/release/release-notes.mjs "$VERSION" acerola-sync/server/RELEASE.md > "$RUNNER_TEMP/notes.md"
+
+      # With the gh CLI of the runner: the organization only allows GitHub-owned actions.
+      - name: Publish the GitHub release
+        working-directory: ${{ github.workspace }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release edit "$RELEASE_TAG" --title "Versão ${VERSION}" --notes-file "$RUNNER_TEMP/notes.md"
+          else
+            gh release create "$RELEASE_TAG" --verify-tag --title "Versão ${VERSION}" --notes-file "$RUNNER_TEMP/notes.md"
           fi
-          git commit -m "[build](backend): Versão ${VERSION} [skip ci]"
-          BUMP_SHA=$(git rev-parse HEAD)
-          git checkout -- .
-
-          # Retries only cover a concurrent push (non fast-forward); anything else fails fast.
-          push() {
-            local branch=$1 attempt=0
-            until git push origin "HEAD:$branch"; do
-              attempt=$((attempt + 1))
-              [ "$attempt" -lt 5 ] || { echo "::error::Could not push the version bump to $branch"; exit 1; }
-              git fetch origin "$branch"
-              git checkout -- .
-              git rebase "origin/$branch"
-            done
-          }
-
-          push main
-
-          git fetch origin develop
-          git checkout -B develop origin/develop
-          git cherry-pick "$BUMP_SHA"
-          git checkout -- .
-          push develop
