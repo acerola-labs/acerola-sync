@@ -190,7 +190,9 @@ Tema e idioma são da pessoa, não do site: trocou para claro no brand book, tod
   fora do cookie (`localStorage`).
 - Lidos num script em linha no `app.html`, **antes da primeira pintura**: tema sem piscar e o
   idioma pela regra da skill `acerola-project`, seção 2.1.
-- Modelo em `lib/utils/preference.util.ts` (`readCookie`, `writeCookie`, `cookieDomain`).
+- Em tempo real: trocou o tema em outra aba ou em outro site Acerola, a página aberta troca na hora,
+  sem recarregar (`watchCookie`: evento `change` do `cookieStore` e nova leitura quando a aba volta).
+- Modelo em `lib/utils/preference.util.ts` (`readCookie`, `writeCookie`, `cookieDomain`, `watchCookie`).
 - Extensão e app nativo (Android, desktop) não leem o cookie do domínio: guardam a escolha no
   próprio storage.
 
